@@ -1,37 +1,8 @@
-use std::convert::Infallible;
 use std::net::SocketAddr;
 
-use http_body_util::Full;
-use hyper::body::Bytes;
-use hyper::server::conn::http1;
-use hyper::service::service_fn;
-use hyper::{Request, Response};
-use hyper_util::rt::TokioIo;
+use fastingress::eventloop;
 use tokio::net::TcpListener;
 
-async fn hello(_: Request<hyper::body::Incoming>) -> Result<Response<Full<Bytes>>, Infallible> {
-    Ok(Response::new(Full::new(Bytes::from("Hello, World!"))))
-}
-
-async fn eventloop(listener: &TcpListener) -> Result<(), std::io::Error> {
-    let (stream, _) = listener.accept().await?;
-
-    // Use an adapter to access something implementing `tokio::io` traits as if they implement
-    // `hyper::rt` IO traits.
-    let io = TokioIo::new(stream);
-
-    tokio::task::spawn(async move {
-        // Finally, we bind the incoming connection to our `hello` service
-        if let Err(err) = http1::Builder::new()
-            // `service_fn` converts our function in a `Service`
-            .serve_connection(io, service_fn(hello))
-            .await
-        {
-            println!("Error serving connection: {:?}", err);
-        }
-    });
-    Ok(())
-}
 const DEFAULT_LISTENING_PORT: u16 = 3000;
 
 #[tokio::main]
