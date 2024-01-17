@@ -1,6 +1,13 @@
 use std::net::SocketAddr;
 
+const DEFAULT_CLUSTER_IP: &str = "localhost";
+const DEFAULT_DOCKER_DESKTOP_CLUSTER_IP: &str = "kubernetes.docker.internal";
+
+const DEFAULT_CLUSTER_PORT: u16 = 6443;
+const DEFAULT_PROXY_PORT: u16 = 8001;
+
 pub fn resolve_service_ip(name: &str) -> SocketAddr {
+    let protocol: &str = "http";
     // TODO find and define Kubernetes cluster ip + port
     // defaults to https://localhost:6443 or  https://kubernetes.docker.internal:6443 for docker desktop
     //
