@@ -8,6 +8,8 @@ use hyper::{Request, Response};
 use hyper_util::rt::TokioIo;
 use tokio::net::TcpListener;
 
+use tokio::task::spawn;
+
 pub fn add_two(a: i32) -> i32 {
     a + 2
 }
@@ -23,7 +25,7 @@ pub async fn eventloop(listener: &TcpListener) -> Result<(), std::io::Error> {
     // `hyper::rt` IO traits.
     let io = TokioIo::new(stream);
 
-    tokio::task::spawn(async move {
+    spawn(async move {
         // Finally, we bind the incoming connection to our `hello` service
         if let Err(err) = http1::Builder::new()
             // `service_fn` converts our function in a `Service`
