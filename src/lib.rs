@@ -1,3 +1,5 @@
+pub mod service_resolver;
+
 use std::convert::Infallible;
 
 use http_body_util::Full;
