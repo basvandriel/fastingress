@@ -8,13 +8,13 @@ fn should_proxy() -> bool {
     true
 }
 
-fn build_service_proxy_url(service_name: &str, service_port: u16) -> String {
+pub fn build_service_proxy_url(service_name: &str, service_port: u16) -> String {
     let mut url: String = format!("http://{}", DEFAULT_CLUSTER_IP);
     url += &format!(":{}", DEFAULT_PROXY_PORT);
 
     // TODO make the namespace configurable
     let namespace = "default";
-    url += &format!("/api/v1/{}/services/", namespace);
+    url += &format!("/api/v1/namespaces/{}/services/", namespace);
     url += service_name;
 
     url += &format!(":{}", service_port);
@@ -30,7 +30,6 @@ pub fn resolve_service_ip(name: &str) -> SocketAddr {
         // TODO
     }
     println!("Resolving {name}");
-    let proxy_url = build_service_proxy_url(name, 80);
     // let z = x +=
     // let api_url = "http://" + DEFAULT_CLUSTER_IP + ":";
     // TODO find and define Kubernetes cluster ip + port
