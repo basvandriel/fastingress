@@ -14,12 +14,7 @@ use tokio::net::TcpListener;
 use tokio::task::spawn;
 
 pub async fn accept_connection(listener: &TcpListener) -> () {
-    let x = listener.accept().await;
-
-    if !x.is_ok() {
-        return;
-    }
-    let (stream, _) = x.unwrap();
+    let (stream, _) = listener.accept().await.expect("No");
     let io = TokioIo::new(stream);
 
     let service = IngressRequestHandler {};
