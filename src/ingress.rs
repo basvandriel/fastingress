@@ -24,6 +24,8 @@ impl IngressRequestHandler {
             port: 80,
         };
         let url = build_service_proxy_url(loc, request.uri());
+
+        // TODO use everything from original request (method, body, ...)
         let result = proxy_response(url).await?;
 
         log_request(request, start.elapsed().as_millis());
