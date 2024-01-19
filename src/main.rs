@@ -1,9 +1,8 @@
 use std::net::SocketAddr;
 
-use fastingress::eventloop;
+use fastingress::accept_connection;
+use fastingress::constants::DEFAULT_LISTENING_PORT;
 use tokio::net::TcpListener;
-
-const DEFAULT_LISTENING_PORT: u16 = 3000;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
@@ -14,6 +13,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     // We start a loop to continuously accept incoming connections
     loop {
-        eventloop(&listener).await?;
+        accept_connection(&listener).await?
     }
 }

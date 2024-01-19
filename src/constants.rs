@@ -1,3 +1,4 @@
+pub const DEFAULT_LISTENING_PORT: u16 = 3000;
 pub const DEFAULT_CLUSTER_IP: &str = "localhost";
 pub const DEFAULT_DOCKER_DESKTOP_CLUSTER_IP: &str = "kubernetes.docker.internal";
 

@@ -23,7 +23,7 @@ pub async fn hello(_request: Request<Incoming>) -> Result<R, ErrorType> {
     Ok(result)
 }
 
-pub async fn eventloop(listener: &TcpListener) -> Result<(), std::io::Error> {
+pub async fn accept_connection(listener: &TcpListener) -> Result<(), std::io::Error> {
     let (stream, _) = listener.accept().await?;
     let io = TokioIo::new(stream);
 
