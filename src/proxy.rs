@@ -12,9 +12,8 @@ use tokio::net::TcpStream;
 use tokio::task::spawn;
 
 use crate::constants::HTTP_PORT;
+use crate::ingress::ErrorType;
 use http_body_util::BodyExt;
-
-type ErrorType = Box<dyn std::error::Error + Send + Sync>;
 
 pub type R = Response<BoxBody<Bytes, hyper::Error>>;
 

@@ -26,7 +26,7 @@ impl IngressRequestHandler {
     }
 }
 
-type ErrorType = Box<dyn std::error::Error + Send + Sync>;
+pub type ErrorType = Box<dyn std::error::Error + Send + Sync>;
 
 impl Service<Request<Incoming>> for IngressRequestHandler {
     type Response = R;
