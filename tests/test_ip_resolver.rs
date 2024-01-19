@@ -17,6 +17,6 @@ fn it_finds_correct_service() {
 
     assert_eq!(
         result,
-        "http://localhost:8001/api/v1/namespaces/default/services/nginx-service:80/proxy"
+        "http://localhost:8001/api/v1/namespaces/default/services/nginx-service:80/proxy/"
     );
 }

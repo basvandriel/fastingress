@@ -19,8 +19,9 @@ pub fn build_service_proxy_url(service_name: &str, service_port: u16) -> String 
 
     url += &format!(":{}", service_port);
 
-    // ... proxy it
-    url += "/proxy";
+    // We need an ending slash
+    // in order for it to redirect
+    url += "/proxy/";
 
     return url;
 }
