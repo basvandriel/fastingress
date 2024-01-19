@@ -44,3 +44,11 @@ See [this link](https://code.visualstudio.com/docs/languages/rust#_debugging). S
   ]
 }
 ```
+
+## Development
+It's not convinient to always rebuild and do a `cargo run` when introducing new changes. For that, we can use [cargo-watch](https://crates.io/crates/cargo-watch). Install it by `cargo install cargo-watch`.
+
+Now, to run the project, use the following command.
+```bash
+cargo watch -x run
+```
