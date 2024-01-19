@@ -19,6 +19,9 @@ type ErrorType = Box<dyn std::error::Error + Send + Sync>;
 pub type R = Response<BoxBody<Bytes, hyper::Error>>;
 
 pub async fn proxy_response(uri: Uri) -> Result<R, ErrorType> {
+    type BodyType = Empty<Bytes>;
+    // TODO This needs the path and headers and body as well
+
     let host = uri.host().expect("uri has no host");
     let port = uri.port_u16().unwrap_or(HTTP_PORT);
 
@@ -31,7 +34,7 @@ pub async fn proxy_response(uri: Uri) -> Result<R, ErrorType> {
     let io = TokioIo::new(stream);
 
     // Perform a TCP handshake
-    let (mut sender, conn) = handshake::<TokioIo<TcpStream>, Empty<Bytes>>(io).await?;
+    let (mut sender, conn) = handshake::<TokioIo<TcpStream>, BodyType>(io).await?;
 
     spawn(async move {
         if let Err(err) = conn.await {
@@ -45,7 +48,7 @@ pub async fn proxy_response(uri: Uri) -> Result<R, ErrorType> {
     let req = Request::builder()
         .uri(uri)
         .header(HOST, authority.as_str())
-        .body(Empty::<Bytes>::new())?;
+        .body(Empty::new())?;
 
     let res = sender.send_request(req).await?;
     let mapped = res.map(|i| i.boxed());
