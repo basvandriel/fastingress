@@ -1,5 +1,7 @@
 use std::net::SocketAddr;
 
+use hyper::Uri;
+
 use crate::constants::{DEFAULT_CLUSTER_IP, DEFAULT_PROXY_PORT};
 
 fn should_proxy() -> bool {
@@ -14,7 +16,7 @@ pub struct KubeServiceLocation {
     pub port: u16,
 }
 
-pub fn build_service_proxy_url(service_loc: KubeServiceLocation) -> String {
+pub fn build_service_proxy_url(service_loc: KubeServiceLocation) -> Uri {
     let mut url: String = format!("http://{}", DEFAULT_CLUSTER_IP);
     url += &format!(":{}", DEFAULT_PROXY_PORT);
 
@@ -29,7 +31,7 @@ pub fn build_service_proxy_url(service_loc: KubeServiceLocation) -> String {
     // in order for it to redirect
     url += "/proxy/";
 
-    return url;
+    return url.parse::<Uri>().unwrap();
 }
 
 pub fn resolve_service_ip(name: &str) -> SocketAddr {
