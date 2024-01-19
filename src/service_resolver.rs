@@ -1,13 +1,15 @@
-use std::net::SocketAddr;
+use std::{env, net::SocketAddr};
 
 use hyper::Uri;
 
 use crate::constants::{DEFAULT_CLUSTER_IP, DEFAULT_PROXY_PORT};
 
+fn running_in_kubernetes_cluster() -> bool {
+    return env::var("KUBERNETES_SERVICE_HOST").is_ok();
+}
+
 fn should_proxy() -> bool {
-    // For now, this value can always be true
-    // since we're not testing kubernetes deployments yet
-    true
+    return running_in_kubernetes_cluster();
 }
 
 pub struct KubeServiceLocation {
