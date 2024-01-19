@@ -14,19 +14,19 @@ use crate::service_resolver::build_service_proxy_url;
 #[derive(Debug, Clone)]
 pub struct IngressRequestHandler;
 
-impl IngressRequestHandler {}
+impl IngressRequestHandler {
+    pub async fn proxy_to_service(request: Request<Incoming>) -> Result<R, ErrorType> {
+        let start = Instant::now();
+
+        let url = build_service_proxy_url("nginx-service", 80).parse::<Uri>()?;
+        let result = proxy_response(url).await?;
+
+        log_request(request, start.elapsed().as_millis());
+        Ok(result)
+    }
+}
 
 type ErrorType = Box<dyn std::error::Error + Send + Sync>;
-
-pub async fn hello(_request: Request<Incoming>) -> Result<R, ErrorType> {
-    let start = Instant::now();
-
-    let url = build_service_proxy_url("nginx-service", 80).parse::<Uri>()?;
-    let result = proxy_response(url).await?;
-
-    log_request(_request, start.elapsed().as_millis());
-    Ok(result)
-}
 
 impl Service<Request<Incoming>> for IngressRequestHandler {
     type Response = R;
@@ -34,7 +34,7 @@ impl Service<Request<Incoming>> for IngressRequestHandler {
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
 
     fn call(&self, req: Request<Incoming>) -> Self::Future {
-        let res = hello(req);
+        let res = Self::proxy_to_service(req);
         Box::pin(res)
     }
 }

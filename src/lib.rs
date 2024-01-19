@@ -17,7 +17,7 @@ pub async fn accept_connection(listener: &TcpListener) -> Result<(), std::io::Er
     let (stream, _) = listener.accept().await?;
     let io = TokioIo::new(stream);
 
-    let service: IngressRequestHandler = IngressRequestHandler {};
+    let service = IngressRequestHandler {};
 
     spawn(async move {
         if let Err(err) = HTTPBuilder::new().serve_connection(io, service).await {
