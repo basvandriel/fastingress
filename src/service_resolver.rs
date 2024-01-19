@@ -16,21 +16,19 @@ pub struct KubeServiceLocation {
     pub port: u16,
 }
 
-pub fn build_service_proxy_url(service_loc: KubeServiceLocation) -> Uri {
+pub fn build_service_proxy_url(service_loc: KubeServiceLocation, original_uri: &Uri) -> Uri {
     let mut url: String = format!("http://{}", DEFAULT_CLUSTER_IP);
     url += &format!(":{}", DEFAULT_PROXY_PORT);
 
-    // TODO make the namespace configurable
-    let namespace = "default";
-    url += &format!("/api/v1/namespaces/{}/services/", namespace);
-    url += service_loc.name.as_str();
+    url += &format!("/api/v1/namespaces/{}/services/", service_loc.namespace);
+    url += &service_loc.name;
 
     url += &format!(":{}", service_loc.port);
+    url += "/proxy";
 
-    // We need an ending slash
-    // in order for it to redirect
-    url += "/proxy/";
-
+    if let Some(path_and_query) = original_uri.path_and_query() {
+        url += &path_and_query.to_string();
+    }
     return url.parse::<Uri>().unwrap();
 }
 

@@ -23,7 +23,7 @@ impl IngressRequestHandler {
             name: String::from("nginx-service"),
             port: 80,
         };
-        let url = build_service_proxy_url(loc);
+        let url = build_service_proxy_url(loc, request.uri());
         let result = proxy_response(url).await?;
 
         log_request(request, start.elapsed().as_millis());
