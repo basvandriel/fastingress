@@ -1,4 +1,5 @@
 pub mod constants;
+mod logger;
 pub mod proxy;
 pub mod service_resolver;
 
@@ -13,9 +14,13 @@ use tokio::net::TcpListener;
 
 use tokio::task::spawn;
 
+use crate::logger::log_request;
+
 type ErrorType = Box<dyn std::error::Error + Send + Sync>;
 
 pub async fn hello(_request: Request<Incoming>) -> Result<R, ErrorType> {
+    log_request(_request);
+
     let url = build_service_proxy_url("nginx-service", 80).parse::<Uri>()?;
     let result = proxy_response(url).await?;
 

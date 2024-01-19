@@ -1,5 +1,6 @@
 use http_body_util::combinators::BoxBody;
 use hyper::body::Bytes;
+use hyper::header::HOST;
 use hyper::Uri;
 use hyper::{Request, Response};
 use hyper_util::rt::TokioIo;
@@ -10,9 +11,8 @@ use tokio::net::TcpStream;
 
 use tokio::task::spawn;
 
-use http_body_util::BodyExt;
-
 use crate::constants::HTTP_PORT;
+use http_body_util::BodyExt;
 
 type ErrorType = Box<dyn std::error::Error + Send + Sync>;
 
@@ -28,7 +28,6 @@ pub async fn proxy_response(uri: Uri) -> Result<R, ErrorType> {
     let stream = TcpStream::connect(address).await?;
 
     // Use an adapter to access something implementing `tokio::io` traits as if they implement
-    // `hyper::rt` IO traits.
     let io = TokioIo::new(stream);
 
     // Perform a TCP handshake
@@ -39,14 +38,13 @@ pub async fn proxy_response(uri: Uri) -> Result<R, ErrorType> {
             println!("Connection failed: {:?}", err);
         }
     });
-
     // The authority of our URL will be the hostname of the httpbin remote
     let authority = uri.authority().unwrap().clone();
 
     // Create an HTTP request with an empty body and a HOST header
     let req = Request::builder()
         .uri(uri)
-        .header(hyper::header::HOST, authority.as_str())
+        .header(HOST, authority.as_str())
         .body(Empty::<Bytes>::new())?;
 
     let res = sender.send_request(req).await?;
