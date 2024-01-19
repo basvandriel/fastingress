@@ -15,13 +15,14 @@ use crate::service_resolver::build_service_proxy_url;
 pub struct IngressRequestHandler;
 
 impl IngressRequestHandler {
-    pub async fn proxy_to_service(request: Request<Incoming>) -> Result<R, ErrorType> {
+    async fn proxy_to_service(request: Request<Incoming>) -> Result<R, ErrorType> {
         let start = Instant::now();
 
         let url = build_service_proxy_url("nginx-service", 80).parse::<Uri>()?;
         let result = proxy_response(url).await?;
 
         log_request(request, start.elapsed().as_millis());
+
         Ok(result)
     }
 }
