@@ -13,8 +13,13 @@ use tokio::net::TcpListener;
 
 use tokio::task::spawn;
 
-pub async fn accept_connection(listener: &TcpListener) -> Result<(), std::io::Error> {
-    let (stream, _) = listener.accept().await?;
+pub async fn accept_connection(listener: &TcpListener) -> () {
+    let x = listener.accept().await;
+
+    if !x.is_ok() {
+        return;
+    }
+    let (stream, _) = x.unwrap();
     let io = TokioIo::new(stream);
 
     let service = IngressRequestHandler {};
@@ -24,5 +29,4 @@ pub async fn accept_connection(listener: &TcpListener) -> Result<(), std::io::Er
             println!("Error serving connection: {:?}", err);
         }
     });
-    Ok(())
 }

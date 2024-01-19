@@ -17,14 +17,17 @@ use http_body_util::BodyExt;
 
 pub type R = Response<BoxBody<Bytes, hyper::Error>>;
 
-pub async fn proxy_response(uri: Uri) -> Result<R, ErrorType> {
-    type BodyType = Empty<Bytes>;
-    // TODO This needs the path and headers and body as well
-
+fn uri_to_string(uri: Uri) -> String {
     let host = uri.host().expect("uri has no host");
     let port = uri.port_u16().unwrap_or(HTTP_PORT);
 
-    let address = format!("{}:{}", host, port);
+    return format!("{}:{}", host, port);
+}
+
+pub async fn proxy_response(uri: Uri) -> Result<R, ErrorType> {
+    type BodyType = Empty<Bytes>;
+
+    let address = uri_to_string(uri.clone());
 
     // Open a TCP connection to the remote host
     let stream = TcpStream::connect(address).await?;
@@ -43,7 +46,7 @@ pub async fn proxy_response(uri: Uri) -> Result<R, ErrorType> {
     // The authority of our URL will be the hostname of the httpbin remote
     let authority = uri.authority().unwrap().clone();
 
-    // Create an HTTP request with an empty body and a HOST header
+    // TODO This needs the path and headers and body as well
     let req = Request::builder()
         .uri(uri)
         .header(HOST, authority.as_str())
