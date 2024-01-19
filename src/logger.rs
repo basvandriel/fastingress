@@ -1,8 +1,11 @@
+use chrono;
 use hyper::Request;
 
 pub fn log_request<T>(request: Request<T>) {
-    let x = request.method().as_str();
-    let z = request.uri().path();
+    let dt = chrono::Local::now().to_rfc2822();
 
-    println!("Request income: {x} \"{z}\"");
+    let method = request.method();
+    let path = request.uri().path();
+
+    println!("[{dt}] {method} \"{path}\"");
 }
