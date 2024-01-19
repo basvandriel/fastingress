@@ -1,6 +1,8 @@
 use std::net::SocketAddr;
 
-use fastingress::service_resolver::{build_service_proxy_url, resolve_service_ip};
+use fastingress::service_resolver::{
+    build_service_proxy_url, resolve_service_ip, KubeServiceLocation,
+};
 
 #[test]
 fn it_adds_two() {
@@ -13,7 +15,12 @@ fn it_adds_two() {
 
 #[test]
 fn it_finds_correct_service() {
-    let result = build_service_proxy_url("nginx-service", 80);
+    let loc = KubeServiceLocation {
+        namespace: String::from("default"),
+        name: String::from("nginx-service"),
+        port: 80,
+    };
+    let result = build_service_proxy_url(loc);
 
     assert_eq!(
         result,

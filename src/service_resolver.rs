@@ -8,16 +8,22 @@ fn should_proxy() -> bool {
     true
 }
 
-pub fn build_service_proxy_url(service_name: &str, service_port: u16) -> String {
+pub struct KubeServiceLocation {
+    pub namespace: String,
+    pub name: String,
+    pub port: u16,
+}
+
+pub fn build_service_proxy_url(service_loc: KubeServiceLocation) -> String {
     let mut url: String = format!("http://{}", DEFAULT_CLUSTER_IP);
     url += &format!(":{}", DEFAULT_PROXY_PORT);
 
     // TODO make the namespace configurable
     let namespace = "default";
     url += &format!("/api/v1/namespaces/{}/services/", namespace);
-    url += service_name;
+    url += service_loc.name.as_str();
 
-    url += &format!(":{}", service_port);
+    url += &format!(":{}", service_loc.port);
 
     // We need an ending slash
     // in order for it to redirect

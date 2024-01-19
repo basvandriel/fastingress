@@ -10,6 +10,7 @@ use crate::logger::log_request;
 use crate::proxy::proxy_response;
 use crate::proxy::R;
 use crate::service_resolver::build_service_proxy_url;
+use crate::service_resolver::KubeServiceLocation;
 
 #[derive(Debug, Clone)]
 pub struct IngressRequestHandler;
@@ -18,12 +19,17 @@ impl IngressRequestHandler {
     async fn proxy_to_service(request: Request<Incoming>) -> Result<R, ErrorType> {
         let start = Instant::now();
 
-        let url = build_service_proxy_url("nginx-service", 80).parse::<Uri>()?;
+        let loc = KubeServiceLocation {
+            namespace: String::from("default"),
+            name: String::from("nginx-service"),
+            port: 80,
+        };
+        let url = build_service_proxy_url(loc).parse::<Uri>()?;
         let result = proxy_response(url).await?;
 
         log_request(request, start.elapsed().as_millis());
 
-        Ok(result)
+        return Ok(result);
     }
 }
 
