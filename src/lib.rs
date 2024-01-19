@@ -12,6 +12,7 @@ use proxy::{proxy_response, R};
 use service_resolver::build_service_proxy_url;
 use tokio::net::TcpListener;
 
+use std::time::Instant;
 use tokio::task::spawn;
 
 use crate::logger::log_request;
@@ -19,12 +20,12 @@ use crate::logger::log_request;
 type ErrorType = Box<dyn std::error::Error + Send + Sync>;
 
 pub async fn hello(_request: Request<Incoming>) -> Result<R, ErrorType> {
-    log_request(_request);
+    let start = Instant::now();
 
     let url = build_service_proxy_url("nginx-service", 80).parse::<Uri>()?;
     let result = proxy_response(url).await?;
 
-    println!("Handled response!");
+    log_request(_request, start.elapsed().as_millis());
     Ok(result)
 }
 
