@@ -1,5 +1,6 @@
 pub mod constants;
-mod ingress;
+pub mod ingress;
+pub mod ipfinder;
 mod logger;
 pub mod proxy;
 pub mod service_resolver;

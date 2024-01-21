@@ -1,6 +1,7 @@
 use hyper::body::Incoming;
 use hyper::service::Service;
 use hyper::Request;
+use hyper::Uri;
 use std::future::Future;
 use std::pin::Pin;
 use std::time::Instant;
@@ -23,7 +24,7 @@ impl IngressRequestHandler {
             name: String::from("nginx-service"),
             port: 80,
         };
-        let url = build_service_proxy_url(loc, request.uri());
+        let url = build_service_proxy_url(&loc, request.uri());
 
         // TODO use everything from original request (method, body, ...)
         let result = proxy_response(url).await?;
