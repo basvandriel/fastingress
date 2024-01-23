@@ -10,5 +10,5 @@ async fn it_should_find() {
     let handler = ipfinder::IpFinder {};
     let result = handler.find(&loc).await;
 
-    assert!(result.is_none());
+    assert!(result.is_some());
 }

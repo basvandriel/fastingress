@@ -21,19 +21,18 @@ impl IpFinder {
         let service_url = resolve_service_uri(service_location);
         let authority = service_url.authority().unwrap().clone();
 
-        // Create an HTTP request with an empty body and a HOST header
-        let req = Request::builder()
-            .uri(&service_url)
+        let req = Request::get(&service_url)
             .header(hyper::header::HOST, authority.as_str())
             .body(BodyType::new())
             .unwrap();
 
-        let mut sender = handshake_url::<BodyType>(&service_url).await;
+        let mut sender: hyper::client::conn::http1::SendRequest<Empty<Bytes>> =
+            handshake_url::<BodyType>(&service_url).await;
 
         return sender.send_request(req).await.unwrap();
     }
 
-    pub async fn find(&self, service_location: &KubeServiceLocation) -> Option<Uri> {
+    pub async fn find(&self, service_location: &KubeServiceLocation) -> Option<Ipv4Addr> {
         let response = Self::request_json(service_location).await;
 
         #[derive(Deserialize)]
@@ -46,13 +45,11 @@ impl IpFinder {
         struct Service {
             spec: Spec,
         }
-        let what = response.collect().await.unwrap().aggregate();
-        let reader = what.reader();
+        let response_bytes = response.collect().await.unwrap();
+        let service: Service = serde_json::from_slice(&response_bytes.to_bytes()).unwrap();
 
-        let service: Service = serde_json::from_reader(reader).unwrap();
         let clusterip = service.spec.cluster_ip;
 
-        // TODO find the URI of a service in a kubernetes cluster (spec >> clusterIP)
-        return None;
+        return Some(clusterip);
     }
 }

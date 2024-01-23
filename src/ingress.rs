@@ -1,7 +1,6 @@
 use hyper::body::Incoming;
 use hyper::service::Service;
 use hyper::Request;
-use hyper::Uri;
 use std::future::Future;
 use std::pin::Pin;
 use std::time::Instant;
