@@ -1,3 +1,5 @@
+use std::net::Ipv4Addr;
+
 use crate::{
     service_resolver::{resolve_service_uri, KubeServiceLocation},
     utils::handshake_url,
@@ -37,7 +39,7 @@ impl IpFinder {
         #[derive(Deserialize)]
         struct Spec {
             #[serde(rename = "clusterIP")]
-            cluster_ip: String,
+            cluster_ip: Ipv4Addr,
         }
 
         #[derive(Deserialize)]
