@@ -18,7 +18,7 @@ pub struct KubeServiceLocation {
     pub port: u16,
 }
 
-pub fn resolve_service_info(service_loc: &KubeServiceLocation) -> Uri {
+pub fn resolve_service_uri(service_loc: &KubeServiceLocation) -> Uri {
     let mut url: String = format!("http://{}", DEFAULT_CLUSTER_IP);
     url += &format!(":{}", DEFAULT_PROXY_PORT);
 
@@ -29,7 +29,7 @@ pub fn resolve_service_info(service_loc: &KubeServiceLocation) -> Uri {
 }
 
 pub fn build_service_proxy_url(service_loc: &KubeServiceLocation, original_uri: &Uri) -> Uri {
-    let mut service_url = resolve_service_info(service_loc).to_string();
+    let mut service_url = resolve_service_uri(service_loc).to_string();
 
     service_url += &format!(":{}", service_loc.port);
     service_url += "/proxy";

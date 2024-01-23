@@ -24,7 +24,7 @@ fn it_finds_correct_service() {
 
     let currentip = "http://localhost:3000/ip".parse::<Uri>().unwrap();
 
-    let result = build_service_proxy_url(loc, &currentip);
+    let result = build_service_proxy_url(&loc, &currentip);
 
     assert_eq!(
         result,
