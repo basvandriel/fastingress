@@ -8,6 +8,7 @@ RUN cargo build --release
 
 EXPOSE 3000
 ENV HOST_OUT=1
+ENV RUST_BACKTRACE=1
 
 # Run the binary
 CMD ["./target/release/fastingress"]

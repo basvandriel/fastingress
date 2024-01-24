@@ -7,7 +7,7 @@ metadata:
 spec:
   containers:
   - name: fastingress
-    image: fastingress:0.0.2
+    image: fastingress:latest
     imagePullPolicy: Never
     ports:
       - containerPort: 3000

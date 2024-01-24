@@ -18,6 +18,7 @@ where
 
     let address = format!("{}:{}", host, port);
 
+    println!("Connecting to {address}");
     // Open a TCP connection to the remote host
     let stream = TcpStream::connect(address).await.unwrap();
 
