@@ -4,7 +4,7 @@ use hyper::Uri;
 
 use crate::constants::{DEFAULT_CLUSTER_IP, DEFAULT_PROXY_PORT};
 
-fn running_in_kubernetes_cluster() -> bool {
+pub fn running_in_kubernetes_cluster() -> bool {
     return env::var("KUBERNETES_SERVICE_HOST").is_ok();
 }
 
@@ -18,20 +18,29 @@ pub struct KubeServiceLocation {
     pub port: u16,
 }
 
-pub fn build_service_proxy_url(service_loc: KubeServiceLocation, original_uri: &Uri) -> Uri {
+pub fn resolve_service_uri(service_loc: &KubeServiceLocation) -> Uri {
+    // TODO this does not work in the cluster. localhost will only be available
+    // when we're proxying. We should get tmy-backend-service.default.svc.cluster.local
+    // TODO also rename
     let mut url: String = format!("http://{}", DEFAULT_CLUSTER_IP);
     url += &format!(":{}", DEFAULT_PROXY_PORT);
 
     url += &format!("/api/v1/namespaces/{}/services/", service_loc.namespace);
     url += &service_loc.name;
 
-    url += &format!(":{}", service_loc.port);
-    url += "/proxy";
+    return url.parse::<Uri>().unwrap();
+}
+
+pub fn build_service_proxy_url(service_loc: &KubeServiceLocation, original_uri: &Uri) -> Uri {
+    let mut service_url = resolve_service_uri(service_loc).to_string();
+
+    service_url += &format!(":{}", service_loc.port);
+    service_url += "/proxy";
 
     if let Some(path_and_query) = original_uri.path_and_query() {
-        url += &path_and_query.to_string();
+        service_url += &path_and_query.to_string();
     }
-    return url.parse::<Uri>().unwrap();
+    return service_url.parse::<Uri>().unwrap();
 }
 
 pub fn resolve_service_ip(name: &str) -> SocketAddr {

@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches:    
+      - 'feature/*'         # matches every branch that doesn't contain a '/'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Create Kubernetes Cluster using Kind
+      uses: helm/kind-action@v1.5.0
+    - name: Enable the kubernetes proxy
+      run: bash scripts/prepare-test.sh
+    - name: Verify Kubernetes Proxy connectivity
+      run: bash scripts/verify-proxy-api.sh
+    - name: Build
+      run: cargo build
+    - name: Run tests
+      run: cargo test --verbose

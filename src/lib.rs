@@ -1,8 +1,11 @@
+pub mod api_resolver;
 pub mod constants;
-mod ingress;
+pub mod ingress;
+pub mod ipfinder;
 mod logger;
 pub mod proxy;
 pub mod service_resolver;
+pub mod utils;
 
 use hyper::server::conn::http1::Builder as HTTPBuilder;
 
