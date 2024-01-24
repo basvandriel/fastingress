@@ -7,7 +7,6 @@ use std::pin::Pin;
 use std::time::Instant;
 
 use crate::api_resolver::resolve_in_cluster_service_uri;
-use crate::logger;
 use crate::logger::log_request;
 use crate::logger::Logger;
 use crate::proxy::proxy_response;
@@ -20,20 +19,16 @@ use crate::service_resolver::KubeServiceLocation;
 pub struct IngressRequestHandler;
 
 impl IngressRequestHandler {
-    const LOGGER: Logger = Logger {};
-
     async fn resolve_url(original_uri: &Uri) -> Uri {
         let loc = KubeServiceLocation {
             namespace: String::from("default"),
             name: String::from("nginx-service"),
             port: 80,
         };
-        let clusterip = resolve_in_cluster_service_uri(&loc).expect("!");
-        Self::LOGGER.info(format!("IP in cluster {}", clusterip).as_str());
 
         let url: Uri;
         if running_in_kubernetes_cluster() {
-            url = clusterip;
+            url = resolve_in_cluster_service_uri(&loc).expect("!");
         } else {
             url = build_service_proxy_url(&loc, &original_uri);
         }
@@ -41,8 +36,11 @@ impl IngressRequestHandler {
     }
 
     async fn proxy_to_service(request: Request<Incoming>) -> Result<R, ErrorType> {
+        let logger: Logger = Logger {};
+
         let start = Instant::now();
         let url = Self::resolve_url(request.uri()).await;
+        logger.info(format!("Routing to URI: {}", url).as_str());
 
         // TODO use everything from original request (method, body, ...)
         let result = proxy_response(url).await?;
