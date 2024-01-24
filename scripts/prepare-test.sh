@@ -2,10 +2,9 @@
 # This file will assume there is a running Kubernetes cluster
 
 DEFAULT_PROXY_PORT=8001
-CLUSTER_PROXY_IP="localhost:$DEFAULT_PROXY_PORT"
 
 echo "No input proxy port found. Defaulting to $DEFAULT_PROXY_PORT"
-echo "Testing cluster operations on $CLUSTER_PROXY_IP"
+echo "Testing cluster operations on localhost:$CLUSTER_PROXY_IP"
 echo ""
 echo "Note: This proxy should only be used to test the result of the Ingress results. The API should ONLY be used for test verification"
 echo ""
