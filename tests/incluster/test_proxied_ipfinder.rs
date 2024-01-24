@@ -7,7 +7,7 @@ async fn it_should_find() {
         name: String::from("nginx-service"),
         port: 80,
     };
-    let handler = ipfinder::IpFinder {};
+    let handler = ipfinder::ProxiedServiceIPFinder {};
     let result = handler.find(&loc).await;
 
     assert!(result.is_some());

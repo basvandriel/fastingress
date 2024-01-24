@@ -5,16 +5,16 @@ use crate::{
     utils::handshake_url,
 };
 use http_body_util::{BodyExt, Empty};
-use hyper::{self, body::Buf};
+use hyper::{self, client::conn::http1::SendRequest};
 use hyper::{
     body::{Bytes, Incoming},
-    Request, Response, Uri,
+    Request, Response,
 };
 use serde::Deserialize;
 
-pub struct IpFinder {}
+pub struct ProxiedServiceIPFinder {}
 
-impl IpFinder {
+impl ProxiedServiceIPFinder {
     async fn request_json(service_location: &KubeServiceLocation) -> Response<Incoming> {
         type BodyType = Empty<Bytes>;
 
@@ -26,8 +26,7 @@ impl IpFinder {
             .body(BodyType::new())
             .unwrap();
 
-        let mut sender: hyper::client::conn::http1::SendRequest<Empty<Bytes>> =
-            handshake_url::<BodyType>(&service_url).await;
+        let mut sender: SendRequest<Empty<Bytes>> = handshake_url::<BodyType>(&service_url).await;
 
         return sender.send_request(req).await.unwrap();
     }
