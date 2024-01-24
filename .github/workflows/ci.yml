@@ -20,7 +20,7 @@ jobs:
       run: bash scripts/prepare-test.sh
     - name: Verify Kubernetes Proxy connectivity
       run: bash scripts/verify-proxy-api.sh
-    # - name: Build
-    #   run: cargo build --verbose
-  # - name: Run tests
-    #   run: cargo test --verbose
+    - name: Build
+      run: cargo build
+    - name: Run tests
+      run: cargo test --verbose
