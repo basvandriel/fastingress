@@ -19,6 +19,9 @@ pub struct KubeServiceLocation {
 }
 
 pub fn resolve_service_uri(service_loc: &KubeServiceLocation) -> Uri {
+    // TODO this does not work in the cluster. localhost will only be available
+    // when we're proxying. We should get tmy-backend-service.default.svc.cluster.local
+    // TODO also rename
     let mut url: String = format!("http://{}", DEFAULT_CLUSTER_IP);
     url += &format!(":{}", DEFAULT_PROXY_PORT);
 

@@ -2,12 +2,11 @@ use hyper::body::Incoming;
 use hyper::service::Service;
 use hyper::Request;
 use hyper::Uri;
-use std::f32::consts::E;
 use std::future::Future;
 use std::pin::Pin;
 use std::time::Instant;
 
-use crate::ipfinder::IpFinder;
+use crate::api_resolver::resolve_in_cluster_service_uri;
 use crate::logger::log_request;
 use crate::proxy::proxy_response;
 use crate::proxy::R;
@@ -25,14 +24,15 @@ impl IngressRequestHandler {
             name: String::from("nginx-service"),
             port: 80,
         };
-        let clusterip = IpFinder {}.find(&loc).await.unwrap();
+        let clusterip = resolve_in_cluster_service_uri(&loc).expect("!");
         println!("INFO - IP in cluster: {}", clusterip);
 
-        let mut url = build_service_proxy_url(&loc, &original_uri);
-
-        // if running_in_kubernetes_cluster() {
-        //     url = format!("http://{}", clusterip).parse::<Uri>().unwrap()
-        // }
+        let url: Uri;
+        if running_in_kubernetes_cluster() {
+            url = clusterip;
+        } else {
+            url = build_service_proxy_url(&loc, &original_uri);
+        }
         return url;
     }
 

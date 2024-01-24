@@ -1,3 +1,4 @@
+pub mod api_resolver;
 pub mod constants;
 pub mod ingress;
 pub mod ipfinder;
