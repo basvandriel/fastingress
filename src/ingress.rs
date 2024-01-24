@@ -27,8 +27,9 @@ impl IngressRequestHandler {
         };
 
         let url: Uri;
+
         if running_in_kubernetes_cluster() {
-            url = resolve_in_cluster_service_uri(&loc).expect("!");
+            url = resolve_in_cluster_service_uri(&loc, &original_uri).expect("!");
         } else {
             url = build_service_proxy_url(&loc, &original_uri);
         }
