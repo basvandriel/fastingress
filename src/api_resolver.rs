@@ -15,7 +15,10 @@ pub fn resolve_in_cluster_uri() -> Option<Uri> {
     return Some(uri.expect("should work here"));
 }
 
-pub fn resolve_in_cluster_service_uri(service_location: &KubeServiceLocation) -> Option<Uri> {
+pub fn resolve_in_cluster_service_uri(
+    service_location: &KubeServiceLocation,
+    original_uri: &Uri,
+) -> Option<Uri> {
     let mut uri = format!(
         "http://{}.{}.svc.",
         service_location.name, service_location.namespace
@@ -23,5 +26,8 @@ pub fn resolve_in_cluster_service_uri(service_location: &KubeServiceLocation) ->
     uri += DEFAULT_CLUSTER_DNS_SUFFIX;
     uri += "/";
 
+    if let Some(path_and_query) = original_uri.path_and_query() {
+        uri += &path_and_query.to_string();
+    }
     return Some(uri.parse::<Uri>().expect("Should parse service"));
 }
