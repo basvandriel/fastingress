@@ -3,7 +3,7 @@
 
 DEFAULT_PROXY_PORT=8001
 
-echo "No input proxy port found. Defaulting to $DEFAULT_PROXY_PORT"
+echo "Input proxy port not yet supported. Defaulting to $DEFAULT_PROXY_PORT"
 echo "Testing cluster operations on localhost:$CLUSTER_PROXY_IP"
 echo ""
 echo "Note: This proxy should only be used to test the result of the Ingress results. The API should ONLY be used for test verification"
@@ -17,4 +17,4 @@ echo ""
 
 kubectl cluster-info
 
-kubectl proxy &
+kubectl proxy --port=$DEFAULT_PROXY_PORT &
