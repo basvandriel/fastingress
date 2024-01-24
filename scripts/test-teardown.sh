@@ -1,3 +1,4 @@
+#!/bin/bash
 DEFAULT_PROXY_PORT=8001
 PROXY_PID=$(lsof -ti :$DEFAULT_PROXY_PORT)
 

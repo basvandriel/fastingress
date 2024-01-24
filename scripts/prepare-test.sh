@@ -1,3 +1,4 @@
+#!/bin/bash
 # This file will assume there is a running Kubernetes cluster
 
 DEFAULT_PROXY_PORT=8001
