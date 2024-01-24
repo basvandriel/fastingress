@@ -11,8 +11,10 @@ echo ""
 # During tests, multiple configurations should be published in a future state
 # During tests, the configurations should then be verified
 # In this, the ingress controller should be configured.
+# After this, but before the test, the proxy  should be verified.
 
 # In the test cleanup, the kubernetes cluster should tear down, removing all pods
+
 kubectl cluster-info
 
 kubectl proxy &
