@@ -4,6 +4,7 @@ pub mod ingress;
 pub mod ipfinder;
 pub mod kube_api_structs;
 mod logger;
+pub mod paths;
 pub mod proxy;
 pub mod service_resolver;
 pub mod uri_resolver;

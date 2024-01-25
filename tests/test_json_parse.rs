@@ -1,24 +1,17 @@
-use fastingress::kube_api_structs::{KubeAPIObjectSpec, KubeAPIObjectSpecRule};
+use fastingress::{
+    kube_api_structs::{KubeAPIObjectSpec, KubeAPIObjectSpecRule},
+    paths::get_kubernetes_path,
+};
 use fs::File;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::{env, fs, io::BufReader, path::PathBuf};
+use std::{fs, io::BufReader};
 
 fn resolve_sample_file() -> File {
     let mut jsonpath = get_kubernetes_path();
     jsonpath.push("sample_ingress_api_response.json");
 
     File::open(jsonpath).expect("file should open")
-}
-fn get_project_root() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-}
-
-fn get_kubernetes_path() -> PathBuf {
-    let mut base = get_project_root();
-    base.push("kubernetes");
-
-    return base;
 }
 
 #[test]
