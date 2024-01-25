@@ -1,8 +1,15 @@
+use fastingress::kube_api_structs::{KubeAPIObjectSpec, KubeAPIObjectSpecRule};
 use fs::File;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{env, fs, io::BufReader, path::PathBuf};
 
+fn resolve_sample_file() -> File {
+    let mut jsonpath = get_kubernetes_path();
+    jsonpath.push("sample_ingress_api_response.json");
+
+    File::open(jsonpath).expect("file should open")
+}
 fn get_project_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
 }
@@ -13,52 +20,10 @@ fn get_kubernetes_path() -> PathBuf {
 
     return base;
 }
-#[derive(Serialize, Deserialize)]
-struct KubeAPIObjectSpecRulePathBackendServicePort {
-    number: u8,
-}
-
-#[derive(Serialize, Deserialize)]
-struct KubeAPIObjectSpecRulePathBackendService {
-    name: String,
-    port: KubeAPIObjectSpecRulePathBackendServicePort,
-}
-
-#[derive(Serialize, Deserialize)]
-struct KubeAPIObjectSpecRulePathBackend {
-    service: KubeAPIObjectSpecRulePathBackendService,
-}
-
-#[derive(Serialize, Deserialize)]
-struct KubeAPIObjectSpecRulePath {
-    path: String,
-    #[serde(rename = "pathType")]
-    path_type: String,
-    backend: KubeAPIObjectSpecRulePathBackend,
-}
-
-#[derive(Serialize, Deserialize)]
-struct KubeAPIObjectSpecHTTPRule {
-    paths: Vec<KubeAPIObjectSpecRulePath>,
-}
-#[derive(Serialize, Deserialize)]
-struct KubeAPIObjectSpecRule {
-    http: KubeAPIObjectSpecHTTPRule,
-}
-
-#[derive(Serialize, Deserialize)]
-struct KubeAPIObjectSpec {
-    #[serde(rename = "ingressClassName")]
-    classname: String,
-    rules: Vec<KubeAPIObjectSpecRule>,
-}
 
 #[test]
 fn it_shouldwork_strictly() {
-    let mut jsonpath = get_kubernetes_path();
-    jsonpath.push("sample_ingress_api_response.json");
-
-    let file = File::open(jsonpath).expect("file should open");
+    let file: File = resolve_sample_file();
     let reader = BufReader::new(file);
 
     #[derive(Serialize, Deserialize)]
@@ -95,10 +60,7 @@ fn it_shouldwork_strictly() {
 
 #[test]
 fn it_shouldwork_justpath() {
-    let mut jsonpath = get_kubernetes_path();
-    jsonpath.push("sample_ingress_api_response.json");
-
-    let file = File::open(jsonpath).expect("file should open");
+    let file: File = resolve_sample_file();
     let reader = BufReader::new(file);
 
     let root: Value = serde_json::from_reader(reader).expect("Should parse");
@@ -108,4 +70,22 @@ fn it_shouldwork_justpath() {
         serde_json::from_value(entries.to_owned()).expect("JSON should parse");
 
     assert_eq!(spec.rules[0].http.paths[0].path, "/");
+}
+
+#[test]
+fn it_shouldwork_rules() {
+    let file: File = resolve_sample_file();
+    let reader = BufReader::new(file);
+
+    let root: Value = serde_json::from_reader(reader).expect("Should parse");
+    let entries = &root["object"].as_object().unwrap()["spec"];
+
+    assert_eq!(entries["ingressClassName"], "nginx-example");
+
+    let (_, rules) = entries.as_object().unwrap().get_key_value("rules").unwrap();
+
+    let rulesobje: Vec<KubeAPIObjectSpecRule> =
+        serde_json::from_value(rules.to_owned()).expect("should parse");
+
+    assert_eq!(rulesobje[0].http.paths[0].path, "/")
 }
