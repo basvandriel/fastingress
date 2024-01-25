@@ -1,5 +1,3 @@
-use std::vec;
-
 use serde_json::Value;
 
 use crate::{constants::INGRESS_CLASSNAME, kube_api_structs::KubeAPIObjectSpecRule};
