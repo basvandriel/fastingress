@@ -13,8 +13,6 @@ fn get_kubernetes_path() -> PathBuf {
     base
 }
 
-s
-
 #[derive(Serialize, Deserialize)]
 struct KubeAPIObjectSpecRulePath {
     path: String,
