@@ -5,7 +5,7 @@ use fastingress::{
 use fs::File;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::{fs, io::BufReader};
+use std::{borrow::Borrow, fs, io::BufReader};
 
 fn resolve_sample_file() -> File {
     let mut jsonpath = get_kubernetes_path();
@@ -40,20 +40,13 @@ fn it_shouldwork_strictly() {
     }
     let u: Foo = serde_json::from_reader(reader).expect("Should parse");
 
-    assert_eq!(u.object.spec.rules[0].http.paths[0].path, "/");
-    assert_eq!(u.object.spec.rules[0].http.paths[0].path_type, "Prefix");
-    assert_eq!(
-        u.object.spec.rules[0].http.paths[0].backend.service.name,
-        "nginx-service"
-    );
-    assert_eq!(
-        u.object.spec.rules[0].http.paths[0]
-            .backend
-            .service
-            .port
-            .number,
-        80
-    );
+    let rules = &u.object.spec.rules;
+    let path = rules[0].http.paths[0].borrow();
+
+    assert_eq!(path.path, "/");
+    assert_eq!(path.path_type, "Prefix");
+    assert_eq!(path.backend.service.name, "nginx-service");
+    assert_eq!(path.backend.service.port.number, 80);
 }
 
 #[test]
@@ -68,8 +61,8 @@ fn it_shouldwork_rules() {
 
     let (_, rules) = entries.as_object().unwrap().get_key_value("rules").unwrap();
 
-    let rulesobje: Vec<KubeAPIObjectSpecRule> =
+    let rules: Vec<KubeAPIObjectSpecRule> =
         serde_json::from_value(rules.to_owned()).expect("should parse");
 
-    assert_eq!(rulesobje[0].http.paths[0].path, "/")
+    assert_eq!(rules[0].http.paths[0].path, "/")
 }
