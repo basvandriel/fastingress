@@ -33,10 +33,3 @@ pub struct KubeAPIObjectSpecHTTPRule {
 pub struct KubeAPIObjectSpecRule {
     pub http: KubeAPIObjectSpecHTTPRule,
 }
-
-#[derive(Serialize, Deserialize)]
-pub struct KubeAPIObjectSpec {
-    #[serde(rename = "ingressClassName")]
-    pub classname: String,
-    pub rules: Vec<KubeAPIObjectSpecRule>,
-}

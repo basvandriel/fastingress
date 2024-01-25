@@ -6,3 +6,5 @@ pub const DEFAULT_CLUSTER_PORT: u16 = 6443;
 pub const DEFAULT_PROXY_PORT: u16 = 8001;
 
 pub const HTTP_PORT: u16 = 80;
+
+pub const INGRESS_CLASSNAME: &str = "fastingress";

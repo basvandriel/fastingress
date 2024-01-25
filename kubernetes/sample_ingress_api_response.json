@@ -36,7 +36,7 @@
             ]
         },
         "spec": {
-            "ingressClassName": "nginx-example",
+            "ingressClassName": "fastingress",
             "rules": [
                 {
                     "http": {

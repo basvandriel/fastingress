@@ -1,5 +1,5 @@
 use fastingress::{
-    kube_api_structs::{KubeAPIObjectSpec, KubeAPIObjectSpecRule},
+    constants::INGRESS_CLASSNAME, kube_api_structs::KubeAPIObjectSpecRule,
     paths::get_kubernetes_path,
 };
 use fs::File;
@@ -20,8 +20,13 @@ fn it_shouldwork_strictly() {
     let reader = BufReader::new(file);
 
     #[derive(Serialize, Deserialize)]
+    pub struct KubeAPIObjectSpec {
+        #[serde(rename = "ingressClassName")]
+        pub classname: String,
+        pub rules: Vec<KubeAPIObjectSpecRule>,
+    }
+    #[derive(Serialize, Deserialize)]
     struct KubeAPIObject {
-        // ingress_type: String,
         kind: String,
 
         #[serde(rename = "apiVersion")]
@@ -52,20 +57,6 @@ fn it_shouldwork_strictly() {
 }
 
 #[test]
-fn it_shouldwork_justpath() {
-    let file: File = resolve_sample_file();
-    let reader = BufReader::new(file);
-
-    let root: Value = serde_json::from_reader(reader).expect("Should parse");
-    let entries = &root["object"].as_object().unwrap()["spec"];
-
-    let spec: KubeAPIObjectSpec =
-        serde_json::from_value(entries.to_owned()).expect("JSON should parse");
-
-    assert_eq!(spec.rules[0].http.paths[0].path, "/");
-}
-
-#[test]
 fn it_shouldwork_rules() {
     let file: File = resolve_sample_file();
     let reader = BufReader::new(file);
@@ -73,7 +64,7 @@ fn it_shouldwork_rules() {
     let root: Value = serde_json::from_reader(reader).expect("Should parse");
     let entries = &root["object"].as_object().unwrap()["spec"];
 
-    assert_eq!(entries["ingressClassName"], "nginx-example");
+    assert_eq!(entries["ingressClassName"], INGRESS_CLASSNAME);
 
     let (_, rules) = entries.as_object().unwrap().get_key_value("rules").unwrap();
 
