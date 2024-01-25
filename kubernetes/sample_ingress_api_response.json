@@ -1,0 +1,65 @@
+{
+    "type": "ADDED",
+    "object": {
+        "kind": "Ingress",
+        "apiVersion": "networking.k8s.io/v1",
+        "metadata": {
+            "name": "minimal-ingress-configuration",
+            "namespace": "default",
+            "uid": "de25c2c2-d60c-4a49-95b2-aa01e20cf87a",
+            "resourceVersion": "50324",
+            "generation": 1,
+            "creationTimestamp": "2024-01-25T13:47:19Z",
+            "annotations": {
+                "kubectl.kubernetes.io/last-applied-configuration": "{\"apiVersion\":\"networking.k8s.io/v1\",\"kind\":\"Ingress\",\"metadata\":{\"annotations\":{},\"name\":\"minimal-ingress-configuration\",\"namespace\":\"default\"},\"spec\":{\"ingressClassName\":\"nginx-example\",\"rules\":[{\"http\":{\"paths\":[{\"backend\":{\"service\":{\"name\":\"nginx-service\",\"port\":{\"number\":80}}},\"path\":\"/\",\"pathType\":\"Prefix\"}]}}]}}\n"
+            },
+            "managedFields": [
+                {
+                    "manager": "kubectl-client-side-apply",
+                    "operation": "Update",
+                    "apiVersion": "networking.k8s.io/v1",
+                    "time": "2024-01-25T13:47:19Z",
+                    "fieldsType": "FieldsV1",
+                    "fieldsV1": {
+                        "f:metadata": {
+                            "f:annotations": {
+                                ".": {},
+                                "f:kubectl.kubernetes.io/last-applied-configuration": {}
+                            }
+                        },
+                        "f:spec": {
+                            "f:ingressClassName": {},
+                            "f:rules": {}
+                        }
+                    }
+                }
+            ]
+        },
+        "spec": {
+            "ingressClassName": "fastingress",
+            "rules": [
+                {
+                    "http": {
+                        "paths": [
+                            {
+                                "path": "/",
+                                "pathType": "Prefix",
+                                "backend": {
+                                    "service": {
+                                        "name": "nginx-service",
+                                        "port": {
+                                            "number": 80
+                                        }
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "status": {
+            "loadBalancer": {}
+        }
+    }
+}

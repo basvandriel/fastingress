@@ -2,7 +2,9 @@ pub mod api_resolver;
 pub mod constants;
 pub mod ingress;
 pub mod ipfinder;
+pub mod kube_api_structs;
 mod logger;
+pub mod paths;
 pub mod proxy;
 pub mod service_resolver;
 pub mod uri_resolver;
@@ -18,6 +20,7 @@ use hyper_util::rt::TokioIo;
 use ingress::{ErrorType, IngressRequestHandler};
 
 use tokio::net::TcpListener;
+pub mod ingress_resource_json_parser;
 
 use tokio::task::spawn;
 
