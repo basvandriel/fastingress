@@ -10,7 +10,22 @@ fn get_kubernetes_path() -> PathBuf {
     let mut base = get_project_root();
     base.push("kubernetes");
 
-    base
+    return base;
+}
+#[derive(Serialize, Deserialize)]
+struct KubeAPIObjectSpecRulePathBackendServicePort {
+    number: u8,
+}
+
+#[derive(Serialize, Deserialize)]
+struct KubeAPIObjectSpecRulePathBackendService {
+    name: String,
+    port: KubeAPIObjectSpecRulePathBackendServicePort,
+}
+
+#[derive(Serialize, Deserialize)]
+struct KubeAPIObjectSpecRulePathBackend {
+    service: KubeAPIObjectSpecRulePathBackendService,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -18,6 +33,7 @@ struct KubeAPIObjectSpecRulePath {
     path: String,
     #[serde(rename = "pathType")]
     path_type: String,
+    backend: KubeAPIObjectSpecRulePathBackend,
 }
 
 #[derive(Serialize, Deserialize)]
