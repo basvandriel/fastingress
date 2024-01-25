@@ -20,6 +20,7 @@ use hyper_util::rt::TokioIo;
 use ingress::{ErrorType, IngressRequestHandler};
 
 use tokio::net::TcpListener;
+pub mod ingress_resource_json_parser;
 
 use tokio::task::spawn;
 

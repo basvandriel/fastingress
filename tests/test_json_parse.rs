@@ -1,11 +1,10 @@
 use fastingress::{
-    constants::INGRESS_CLASSNAME, kube_api_structs::KubeAPIObjectSpecRule,
+    ingress_resource_json_parser::parse_ingress_rules, kube_api_structs::KubeAPIObjectSpecRule,
     paths::get_kubernetes_path,
 };
 use fs::File;
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use std::{borrow::Borrow, fs, io::BufReader};
+
+use std::{borrow::Borrow, fs, io::Read};
 
 fn resolve_sample_file() -> File {
     let mut jsonpath = get_kubernetes_path();
@@ -15,54 +14,34 @@ fn resolve_sample_file() -> File {
 }
 
 #[test]
+#[should_panic]
+fn it_should_panic() {
+    let data = r#"
+    {
+        "object": {
+            "kind": "Ingress",
+            "spec": {
+                "ingressClassName": "fast",
+                "rules": []
+            }
+        }
+    }
+    "#;
+    parse_ingress_rules(&data);
+}
+
+#[test]
 fn it_shouldwork_strictly() {
-    let file: File = resolve_sample_file();
-    let reader = BufReader::new(file);
+    let mut file: File = resolve_sample_file();
+    let mut buffer = String::new();
 
-    #[derive(Serialize, Deserialize)]
-    pub struct KubeAPIObjectSpec {
-        #[serde(rename = "ingressClassName")]
-        pub classname: String,
-        pub rules: Vec<KubeAPIObjectSpecRule>,
-    }
-    #[derive(Serialize, Deserialize)]
-    struct KubeAPIObject {
-        kind: String,
+    file.read_to_string(&mut buffer).expect("Should parse");
 
-        #[serde(rename = "apiVersion")]
-        api_version: String,
-        spec: KubeAPIObjectSpec,
-    }
-
-    #[derive(Serialize, Deserialize)]
-    struct Foo {
-        object: KubeAPIObject,
-    }
-    let u: Foo = serde_json::from_reader(reader).expect("Should parse");
-
-    let rules = &u.object.spec.rules;
+    let rules: Vec<KubeAPIObjectSpecRule> = parse_ingress_rules(&buffer);
     let path = rules[0].http.paths[0].borrow();
 
     assert_eq!(path.path, "/");
     assert_eq!(path.path_type, "Prefix");
     assert_eq!(path.backend.service.name, "nginx-service");
     assert_eq!(path.backend.service.port.number, 80);
-}
-
-#[test]
-fn it_shouldwork_rules() {
-    let file: File = resolve_sample_file();
-    let reader = BufReader::new(file);
-
-    let root: Value = serde_json::from_reader(reader).expect("Should parse");
-    let entries = &root["object"].as_object().unwrap()["spec"];
-
-    assert_eq!(entries["ingressClassName"], INGRESS_CLASSNAME);
-
-    let (_, rules) = entries.as_object().unwrap().get_key_value("rules").unwrap();
-
-    let rules: Vec<KubeAPIObjectSpecRule> =
-        serde_json::from_value(rules.to_owned()).expect("should parse");
-
-    assert_eq!(rules[0].http.paths[0].path, "/")
 }

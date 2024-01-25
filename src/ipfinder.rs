@@ -39,11 +39,11 @@ impl ProxiedServiceIPFinder {
             #[serde(rename = "clusterIP")]
             cluster_ip: Ipv4Addr,
         }
-
         #[derive(Deserialize)]
         struct Service {
             spec: Spec,
         }
+
         let response_bytes = response.collect().await.unwrap();
         let service: Service = serde_json::from_slice(&response_bytes.to_bytes()).unwrap();
 
