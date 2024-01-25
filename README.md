@@ -1,4 +1,5 @@
 # fastingress
+Lightning fast Kubernetes Ingress Controller powered by Hyper.
 
 ## debugging 
 
