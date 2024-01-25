@@ -1,6 +1,7 @@
 use fastingress::{
-    api_resolver::{resolve_in_cluster_service_uri, resolve_in_cluster_uri},
+    api_resolver::resolve_in_cluster_uri,
     service_resolver::KubeServiceLocation,
+    uri_resolver::{InClusterServiceURLResolver, UrlResolver},
 };
 use hyper::Uri;
 
@@ -19,7 +20,12 @@ fn it_should_generate_one() {
     };
     let currentip = "http://localhost:3000/ip".parse::<Uri>().unwrap();
 
-    let result = resolve_in_cluster_service_uri(&loc, &currentip).expect("Should work");
-    let host = result.host().unwrap();
-    assert_eq!(host, "nginx-service.default.svc.cluster.local");
+    let resolver = InClusterServiceURLResolver {
+        original_url: currentip.clone(),
+    };
+    let result = resolver.resolve(&loc).expect("Should work");
+    assert_eq!(
+        result.host().unwrap(),
+        "nginx-service.default.svc.cluster.local"
+    );
 }

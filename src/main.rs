@@ -11,7 +11,6 @@ fn resolve_ip() -> Ipv4Addr {
 
     if hostout.is_some() && hostout.unwrap().eq("1") {
         println!("INFO: Detected HOST_OUT=1 in environment");
-
         return Ipv4Addr::UNSPECIFIED;
     }
     return Ipv4Addr::LOCALHOST;
