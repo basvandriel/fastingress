@@ -6,37 +6,45 @@ use std::future::Future;
 use std::pin::Pin;
 use std::time::Instant;
 
-use crate::api_resolver::resolve_in_cluster_service_uri;
 use crate::logger::log_request;
 use crate::logger::Logger;
 use crate::proxy::proxy_response;
 use crate::proxy::R;
-use crate::service_resolver::build_service_proxy_url;
 use crate::service_resolver::running_in_kubernetes_cluster;
 use crate::service_resolver::KubeServiceLocation;
+use crate::uri_resolver::InClusterServiceURLResolver;
+use crate::uri_resolver::ProxiedServiceURLResolver;
+use crate::uri_resolver::UrlResolver;
+
+type RQ = Request<Incoming>;
 
 #[derive(Debug, Clone)]
 pub struct IngressRequestHandler;
 
 impl IngressRequestHandler {
+    fn build_url_resolver(original_uri: Uri) -> Box<dyn UrlResolver> {
+        if running_in_kubernetes_cluster() {
+            return Box::new(InClusterServiceURLResolver {
+                original_url: original_uri,
+            });
+        }
+        return Box::new(ProxiedServiceURLResolver {
+            original_url: original_uri,
+        });
+    }
+
     async fn resolve_url(original_uri: &Uri) -> Uri {
         let loc = KubeServiceLocation {
             namespace: String::from("default"),
             name: String::from("nginx-service"),
             port: 80,
         };
+        let url = Self::build_url_resolver(original_uri.clone()).resolve(&loc);
 
-        let url: Uri;
-
-        if running_in_kubernetes_cluster() {
-            url = resolve_in_cluster_service_uri(&loc, &original_uri).expect("!");
-        } else {
-            url = build_service_proxy_url(&loc, &original_uri);
-        }
-        return url;
+        return url.expect("URI should be there");
     }
 
-    async fn proxy_to_service(request: Request<Incoming>) -> Result<R, ErrorType> {
+    async fn proxy_to_service(request: RQ) -> Result<R, ErrorType> {
         let logger: Logger = Logger {};
 
         let start = Instant::now();
@@ -54,12 +62,12 @@ impl IngressRequestHandler {
 
 pub type ErrorType = Box<dyn std::error::Error + Send + Sync>;
 
-impl Service<Request<Incoming>> for IngressRequestHandler {
+impl Service<RQ> for IngressRequestHandler {
     type Response = R;
     type Error = ErrorType;
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
 
-    fn call(&self, req: Request<Incoming>) -> Self::Future {
+    fn call(&self, req: RQ) -> Self::Future {
         let res = Self::proxy_to_service(req);
         Box::pin(res)
     }

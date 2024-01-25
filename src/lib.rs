@@ -5,8 +5,8 @@ pub mod ipfinder;
 mod logger;
 pub mod proxy;
 pub mod service_resolver;
+pub mod uri_resolver;
 pub mod utils;
-
 use hyper::server::conn::http1::Builder as HTTPBuilder;
 
 use hyper_util::rt::TokioIo;
