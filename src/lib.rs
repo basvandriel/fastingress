@@ -22,6 +22,8 @@ use ingress::{ErrorType, IngressRequestHandler};
 use tokio::net::TcpListener;
 pub mod ingress_resource_json_parser;
 
+pub mod ingress_resource_resolver;
+
 use tokio::task::spawn;
 
 async fn hello(req: Request<Incoming>) -> Result<R, ErrorType> {
