@@ -3,7 +3,9 @@ use std::error::Error;
 use std::net::{Ipv4Addr, SocketAddr};
 
 use fastingress::accept_connection;
+use fastingress::api_watcher::APIListener;
 use fastingress::constants::DEFAULT_LISTENING_PORT;
+use fastingress::logger::Logger;
 use tokio::net::TcpListener;
 
 fn resolve_ip() -> Ipv4Addr {
@@ -18,10 +20,17 @@ fn resolve_ip() -> Ipv4Addr {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
-    let address = SocketAddr::from((resolve_ip(), DEFAULT_LISTENING_PORT));
-    let listener = TcpListener::bind(address).await?;
+    let logger = Logger {};
 
-    println!("INFO: Listening on http://{address}");
+    let address = SocketAddr::from((resolve_ip(), DEFAULT_LISTENING_PORT));
+
+    tokio::spawn(async move {
+        let apilistener = APIListener {};
+        let _ = apilistener.listen().await;
+    });
+    let listener = TcpListener::bind(address).await?;
+    logger.info(format!("Listening on http://{}", address).as_str());
+
     loop {
         accept_connection(&listener).await
     }
