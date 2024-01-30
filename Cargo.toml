@@ -14,3 +14,6 @@ chrono = "0.4.31"
 reqwest = { version = "0.11.23", features = ["json"] }
 serde_json = "1.0.111"
 serde = { version = "1.0", features = ["derive"] }
+kube = { version = "0.88.0", features = ["runtime", "derive"] }
+k8s-openapi = { version = "0.21.0", features = ["latest"] }
+futures = "0.3.30"
