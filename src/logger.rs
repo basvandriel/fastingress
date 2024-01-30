@@ -1,4 +1,6 @@
 use chrono;
+
+#[derive(Clone, Copy)]
 pub struct Logger {}
 
 impl Logger {

@@ -7,6 +7,7 @@ use fastingress::api_watcher::APIListener;
 use fastingress::constants::DEFAULT_LISTENING_PORT;
 use fastingress::logger::Logger;
 use tokio::net::TcpListener;
+use tokio::spawn;
 
 fn resolve_ip() -> Ipv4Addr {
     let hostout = env::var("HOST_OUT").ok();
@@ -22,16 +23,13 @@ fn resolve_ip() -> Ipv4Addr {
 async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let logger = Logger {};
 
-    let address = SocketAddr::from((resolve_ip(), DEFAULT_LISTENING_PORT));
-
-    tokio::spawn(async move {
-        let apilistener = APIListener {};
-        let _ = apilistener.listen().await;
+    spawn(async move {
+        APIListener { logger }.listen().await;
     });
-    let listener = TcpListener::bind(address).await?;
-    logger.info(format!("Listening on http://{}", address).as_str());
 
+    let address = SocketAddr::from((resolve_ip(), DEFAULT_LISTENING_PORT));
+    let listener = TcpListener::bind(address).await?;
     loop {
-        accept_connection(&listener).await
+        accept_connection(&listener, logger).await
     }
 }
