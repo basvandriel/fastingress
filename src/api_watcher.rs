@@ -1,5 +1,5 @@
 use futures::{pin_mut, TryStreamExt};
-use k8s_openapi::api::networking::v1::{Ingress, IngressSpec};
+use k8s_openapi::api::networking::v1::{Ingress, IngressRule, IngressSpec};
 
 use crate::constants::INGRESS_CLASSNAME;
 use crate::logger::Logger;
@@ -13,8 +13,13 @@ pub struct APIListener {
 }
 
 impl APIListener {
-    fn handle_ingress(&self, _ingress: &IngressSpec) {
-        self.logger.info("Matching Ingress resource found");
+    fn handle_ingress(&self, ingress: &IngressSpec) {
+        let rules: Vec<IngressRule> = ingress
+            .to_owned()
+            .rules
+            .expect("Ingress Rules should be there");
+
+        self.logger.info("Ingress resource found, processing...");
     }
 
     fn resolve_ingress_class<'a>(&'a self, ingress: &'a Ingress) -> &String {

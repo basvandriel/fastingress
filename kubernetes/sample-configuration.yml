@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   name: minimal-ingress-configuration
 spec:
-  ingressClassName: nginx-example
+  ingressClassName: fastingress
   rules:
   - http:
       paths:
