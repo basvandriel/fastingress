@@ -1,18 +1,34 @@
 use futures::{pin_mut, TryStreamExt};
 use k8s_openapi::api::networking::v1::{Ingress, IngressSpec};
 
+use crate::constants::INGRESS_CLASSNAME;
+use crate::logger::Logger;
 use kube::{
     runtime::{watcher, WatchStreamExt},
     Api, Client,
 };
-
-use crate::logger::Logger;
 
 pub struct APIListener {
     pub logger: Logger,
 }
 
 impl APIListener {
+    fn handle_ingress(&self, _ingress: &IngressSpec) {
+        self.logger.info("Matching Ingress resource found");
+    }
+
+    fn resolve_ingress_class<'a>(&'a self, ingress: &'a Ingress) -> &String {
+        let cn = ingress
+            .spec
+            .as_ref()
+            .expect("spec should be there")
+            .ingress_class_name
+            .as_ref()
+            .expect("class name should be there");
+
+        return cn;
+    }
+
     pub async fn listen(&self) {
         let client = Client::try_default().await.expect("Kube client");
         let api = Api::<Ingress>::default_namespaced(client);
@@ -22,12 +38,16 @@ impl APIListener {
         let stream = watcher(api, conf).applied_objects();
         pin_mut!(stream);
 
-        self.logger
-            .info("Listening for new Kubernetes Ingress events");
+        let logmessage = format!(
+            "Listening for new Kubernetes Ingress events with classname '{INGRESS_CLASSNAME}'"
+        );
+        self.logger.info(&logmessage);
 
         while let Some(ingress) = stream.try_next().await.unwrap() {
-            let _: IngressSpec = ingress.spec.expect("Spec should be there");
-            self.logger.info("Message found!");
+            if self.resolve_ingress_class(&ingress) != INGRESS_CLASSNAME {
+                continue;
+            }
+            self.handle_ingress(&ingress.spec.unwrap());
         }
     }
 }
