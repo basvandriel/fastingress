@@ -26,7 +26,7 @@ fn resolve_ip() -> Ipv4Addr {
 async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let logger = Logger {};
 
-    let (tx, rx) = mpsc::channel::<IngressRule>(1);
+    let (tx, mut rx) = mpsc::channel::<IngressRule>(1);
     spawn(async move {
         APIListener {
             logger,
@@ -39,6 +39,6 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let address = SocketAddr::from((resolve_ip(), DEFAULT_LISTENING_PORT));
     let listener = TcpListener::bind(address).await?;
     loop {
-        accept_connection(&listener, logger).await
+        accept_connection(&listener, logger, &mut rx).await
     }
 }
