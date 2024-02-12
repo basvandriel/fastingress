@@ -7,6 +7,7 @@ use fastingress::api_watcher::APIListener;
 use fastingress::constants::DEFAULT_LISTENING_PORT;
 use fastingress::logger::Logger;
 use tokio::net::TcpListener;
+
 use tokio::spawn;
 use tokio::sync::mpsc;
 
@@ -26,7 +27,11 @@ fn resolve_ip() -> Ipv4Addr {
 async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let logger = Logger {};
 
-    let (tx, mut rx) = mpsc::channel::<IngressRule>(1);
+    let (tx, _rx) = mpsc::channel::<IngressRule>(1);
+
+    // We actually dont' need a seperate MPSC.
+    // it already receives the nessacery data. If we just have a place
+    // for storage. That should be good
     spawn(async move {
         APIListener {
             logger,
@@ -39,6 +44,6 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let address = SocketAddr::from((resolve_ip(), DEFAULT_LISTENING_PORT));
     let listener = TcpListener::bind(address).await?;
     loop {
-        accept_connection(&listener, logger, &mut rx).await
+        accept_connection(&listener, logger).await
     }
 }

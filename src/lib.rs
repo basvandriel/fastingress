@@ -35,20 +35,15 @@ async fn hello(req: Request<Incoming>) -> Result<R, ErrorType> {
     return IngressRequestHandler.proxy_to_service(req).await;
 }
 
-pub async fn accept_connection(
-    listener: &TcpListener,
-    logger: Logger,
-    rx: &mut Receiver<IngressRule>,
-) -> () {
+pub async fn accept_connection(listener: &TcpListener, logger: Logger) -> () {
     let addr = listener.local_addr().unwrap();
     logger.info(format!("Listening for new TCP connections on http://{}", addr).as_str());
 
-    while let Some(_message) = rx.recv().await {
-        logger.info("Received Ingress Rule via MPSC");
-    }
     let (stream, _) = listener.accept().await.expect("No");
 
     spawn(async move {
+        println!("found conn!");
+
         let io = TokioIo::new(stream);
         let service = service_fn(hello);
         if let Err(err) = HTTPBuilder::new().serve_connection(io, service).await {
