@@ -1,10 +1,10 @@
 use futures::{pin_mut, TryStreamExt};
 use k8s_openapi::api::networking::v1::{HTTPIngressPath, Ingress, IngressRule, IngressSpec};
 
+use crate::constants::INGRESS_CLASSNAME;
 use crate::logger::Logger;
 use crate::route_entry::RouteEntry;
 use crate::types::{Arced, NewRouteMap};
-use crate::{constants::INGRESS_CLASSNAME, types::RouteMap};
 use kube::{
     runtime::{watcher, WatchStreamExt},
     Api, Client,
@@ -41,7 +41,11 @@ impl APIListener {
         entries
     }
 
-    fn resolve_route_entries(&self, routemap: &RouteMap, ingress_name: &String) -> Vec<RouteEntry> {
+    fn resolve_route_entries(
+        &self,
+        routemap: &Vec<IngressRule>,
+        ingress_name: &String,
+    ) -> Vec<RouteEntry> {
         routemap
             .iter()
             .flat_map(|route| self.resolve_rule_entries(route))
