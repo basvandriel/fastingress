@@ -2,11 +2,12 @@ use crate::ingress::{ErrorType, IngressRequestHandler};
 use crate::logger::Logger;
 use crate::proxy::R;
 use crate::types::{Arced, RouteMap};
-use http_body_util::Full;
 use hyper::service::Service;
-use hyper::{body::Incoming as IncomingBody, Request, Response};
+use hyper::{body::Incoming as IncomingBody, Request};
 use std::future::Future;
 use std::pin::Pin;
+
+use uuid::Uuid;
 
 #[derive(Clone)]
 pub struct Svc {
@@ -20,9 +21,7 @@ impl Service<Request<IncomingBody>> for Svc {
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
 
     fn call(&self, req: Request<IncomingBody>) -> Self::Future {
-        self.logger.info("Incoming!");
-
-        let response = async move { IngressRequestHandler.proxy_to_service(req).await };
+        let response = IngressRequestHandler.proxy_to_service(req);
         Box::pin(response)
     }
 }

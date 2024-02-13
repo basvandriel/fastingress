@@ -12,6 +12,7 @@ use fastingress::types::{Arced, RouteMap};
 use hyper::server::conn::http1;
 use hyper_util::rt::TokioIo;
 use tokio::net::TcpListener;
+use uuid::Uuid;
 
 use tokio::spawn;
 
@@ -44,7 +45,6 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         logger,
         routes: routes_clone,
     };
-
     logger.info(format!("Listening for new TCP connections on http://{}", address).as_str());
 
     loop {

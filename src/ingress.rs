@@ -1,7 +1,10 @@
 use hyper::body::Incoming;
 use hyper::Request;
 use hyper::Uri;
+use rand::distributions::{Alphanumeric, DistString};
 use std::time::Instant;
+
+// use rand::distributions::{Alphanumeric, DistString};
 
 use crate::logger::Logger;
 use crate::proxy::proxy_response;
@@ -18,11 +21,11 @@ type RQ = Request<Incoming>;
 pub struct IngressRequestHandler;
 
 impl IngressRequestHandler {
-    fn log_request<T>(&self, request: Request<T>, duration_ms: u128) {
-        let method = request.method();
-        let path = request.uri().path();
-
-        let message = format!("{} \"{}\" - took {}ms", method, path, duration_ms);
+    fn log_request(&self, duration_ms: u128, request_id: &str) {
+        let message = format!(
+            "Request \"{}\" finished - took {}ms",
+            request_id, duration_ms
+        );
 
         let logger = Logger {};
         logger.info(&message);
@@ -52,15 +55,24 @@ impl IngressRequestHandler {
 
     pub async fn proxy_to_service(&self, request: RQ) -> Result<R, ErrorType> {
         let logger: Logger = Logger {};
-
         let start = Instant::now();
+
+        let request_id = Alphanumeric.sample_string(&mut rand::thread_rng(), 8);
+
+        let logmsg = format!(
+            "Incoming request (\"{}\"): {} \"{}\"",
+            request_id,
+            request.method(),
+            request.uri(),
+        );
+        logger.info(&logmsg);
+
         let url = self.resolve_url(request.uri()).await;
-        logger.info(format!("Routing to URI: {}", url).as_str());
 
         // TODO use everything from original request (method, body, ...)
         let result = proxy_response(url).await?;
 
-        self.log_request(request, start.elapsed().as_millis());
+        self.log_request(start.elapsed().as_millis(), &request_id);
         return Ok(result);
     }
 }
