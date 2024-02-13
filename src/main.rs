@@ -7,7 +7,7 @@ use fastingress::api_watcher::APIListener;
 use fastingress::constants::DEFAULT_LISTENING_PORT;
 use fastingress::logger::Logger;
 use fastingress::request_handler::Svc;
-use fastingress::types::{Arced, RouteMap};
+use fastingress::types::{Arced, NewRouteMap};
 use hyper::server::conn::http1;
 use hyper_util::rt::TokioIo;
 use tokio::net::TcpListener;
@@ -27,7 +27,7 @@ fn resolve_ip() -> Ipv4Addr {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let logger = Logger {};
-    let routes: Arced<RouteMap> = Arc::new(Mutex::new(vec![]));
+    let routes: Arced<NewRouteMap> = Arc::new(Mutex::new(vec![]));
     let routes_clone = routes.clone();
 
     // We actually dont' need a seperate MPSC.

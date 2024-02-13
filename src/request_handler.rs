@@ -1,7 +1,7 @@
 use crate::ingress::{ErrorType, IngressRequestHandler};
 use crate::logger::Logger;
 use crate::proxy::R;
-use crate::types::{Arced, RouteMap};
+use crate::types::{Arced, NewRouteMap};
 use hyper::service::Service;
 use hyper::{body::Incoming as IncomingBody, Request};
 use std::future::Future;
@@ -10,7 +10,7 @@ use std::pin::Pin;
 #[derive(Clone)]
 pub struct Svc {
     pub logger: Logger,
-    pub routes: Arced<RouteMap>,
+    pub routes: Arced<NewRouteMap>,
 }
 
 impl Service<Request<IncomingBody>> for Svc {
