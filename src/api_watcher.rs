@@ -1,9 +1,9 @@
 use futures::{pin_mut, TryStreamExt};
 use k8s_openapi::api::networking::v1::{Ingress, IngressRule, IngressSpec};
-use tokio::sync::mpsc::Sender;
 
-use crate::constants::INGRESS_CLASSNAME;
 use crate::logger::Logger;
+use crate::types::Arced;
+use crate::{constants::INGRESS_CLASSNAME, types::RouteMap};
 use kube::{
     runtime::{watcher, WatchStreamExt},
     Api, Client,
@@ -11,7 +11,7 @@ use kube::{
 
 pub struct APIListener {
     pub logger: Logger,
-    pub ingress_sender: Sender<IngressRule>,
+    pub routes: Arced<RouteMap>,
 }
 
 impl APIListener {
@@ -23,7 +23,8 @@ impl APIListener {
         self.logger.info("Processing Ingress definition...");
 
         for rule in rules.iter() {
-            let _ = self.ingress_sender.send(rule.clone()).await;
+            let mut x = self.routes.lock().unwrap();
+            x.push(rule.clone());
         }
     }
 

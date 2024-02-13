@@ -8,46 +8,45 @@ pub mod paths;
 pub mod proxy;
 pub mod service_resolver;
 pub mod uri_resolver;
+
+pub mod request_handler;
 pub mod utils;
+
+use std::net::SocketAddr;
 
 // use futures::channel::mpsc::Receiver;
 use hyper::body::Incoming;
 use hyper::server::conn::http1::Builder as HTTPBuilder;
 use hyper::Request;
-use k8s_openapi::api::networking::v1::IngressRule;
+use kube::api::Log;
 use logger::Logger;
-use tokio::sync::mpsc::Receiver;
+use types::{Arced, RouteMap};
+pub mod types;
 
 use crate::proxy::R;
 use hyper::service::service_fn;
 use hyper_util::rt::TokioIo;
 use ingress::{ErrorType, IngressRequestHandler};
 
-use tokio::net::TcpListener;
+use tokio::net::TcpStream;
 pub mod ingress_resource_json_parser;
 
 pub mod api_watcher;
 pub mod ingress_resource_resolver;
 
-use tokio::spawn;
-
-async fn hello(req: Request<Incoming>) -> Result<R, ErrorType> {
+pub async fn hello(req: Request<Incoming>) -> Result<R, ErrorType> {
     return IngressRequestHandler.proxy_to_service(req).await;
 }
 
-pub async fn accept_connection(listener: &TcpListener, logger: Logger) -> () {
-    let addr = listener.local_addr().unwrap();
-    logger.info(format!("Listening for new TCP connections on http://{}", addr).as_str());
+pub async fn accept_incoming(stream: TcpStream, routes: RouteMap) {
+    let logger = Logger {};
+    logger.info(format!("Amount of routes: {:?}", routes.len()).as_str());
 
-    let (stream, _) = listener.accept().await.expect("No");
+    let io = TokioIo::new(stream);
+    let http = HTTPBuilder::new();
 
-    spawn(async move {
-        println!("found conn!");
-
-        let io = TokioIo::new(stream);
-        let service = service_fn(hello);
-        if let Err(err) = HTTPBuilder::new().serve_connection(io, service).await {
-            println!("Error serving connection: {:?}", err);
-        }
-    });
+    // http.serve_connection(io, service)
+    if let Err(err) = http.serve_connection(io, service_fn(hello)).await {
+        println!("Error serving connection: {:?}", err);
+    }
 }
