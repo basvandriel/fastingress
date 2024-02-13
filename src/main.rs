@@ -3,7 +3,6 @@ use std::error::Error;
 use std::net::{Ipv4Addr, SocketAddr};
 use std::sync::{Arc, Mutex};
 
-use fastingress::accept_incoming;
 use fastingress::api_watcher::APIListener;
 use fastingress::constants::DEFAULT_LISTENING_PORT;
 use fastingress::logger::Logger;

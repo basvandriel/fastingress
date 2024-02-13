@@ -1,16 +1,18 @@
 use hyper::body::Incoming;
 use hyper::Request;
 use hyper::Uri;
+use k8s_openapi::api::networking::v1::HTTPIngressPath;
+use k8s_openapi::api::networking::v1::IngressRule;
+use kube::api::Log;
 use rand::distributions::{Alphanumeric, DistString};
 use std::time::Instant;
-
-// use rand::distributions::{Alphanumeric, DistString};
 
 use crate::logger::Logger;
 use crate::proxy::proxy_response;
 use crate::proxy::R;
 use crate::service_resolver::running_in_kubernetes_cluster;
 use crate::service_resolver::KubeServiceLocation;
+use crate::types::RouteMap;
 use crate::uri_resolver::InClusterServiceURLResolver;
 use crate::uri_resolver::ProxiedServiceURLResolver;
 use crate::uri_resolver::UrlResolver;
@@ -53,10 +55,32 @@ impl IngressRequestHandler {
         return url.expect("URI should be there");
     }
 
-    pub async fn proxy_to_service(&self, request: RQ) -> Result<R, ErrorType> {
+    fn debug_route(&self, route: &IngressRule, logger: Logger) {
+        let http = route.http.as_ref().unwrap();
+        let paths: Vec<HTTPIngressPath> = http.paths.clone();
+
+        for pathobj in paths.iter() {
+            let path = pathobj.path.as_ref().unwrap();
+            let service = pathobj.backend.service.as_ref().unwrap();
+            let port = service.port.as_ref().unwrap().number.unwrap();
+
+            logger.info(&format!(
+                "Routing {} -> {} on port {}",
+                path, service.name, port
+            ));
+        }
+    }
+    fn debug_routes(&self, x: &RouteMap, logger: Logger) {
+        for route in x.iter() {
+            self.debug_route(route, logger);
+        }
+    }
+
+    pub async fn proxy_to_service(&self, request: RQ, x: RouteMap) -> Result<R, ErrorType> {
         let logger: Logger = Logger {};
         let start = Instant::now();
 
+        self.debug_routes(&x, logger);
         let request_id = Alphanumeric.sample_string(&mut rand::thread_rng(), 8);
 
         let logmsg = format!(
