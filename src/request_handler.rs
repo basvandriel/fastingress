@@ -7,8 +7,6 @@ use hyper::{body::Incoming as IncomingBody, Request};
 use std::future::Future;
 use std::pin::Pin;
 
-use uuid::Uuid;
-
 #[derive(Clone)]
 pub struct Svc {
     pub logger: Logger,
