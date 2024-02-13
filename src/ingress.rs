@@ -26,7 +26,7 @@ struct RouteEntry {
 type RQ = Request<Incoming>;
 
 #[derive(Debug, Clone)]
-pub struct IngressRequestHandler;
+pub struct IngressRequestHandler {}
 
 impl IngressRequestHandler {
     fn log_request(&self, duration_ms: u128, request_id: &str) {

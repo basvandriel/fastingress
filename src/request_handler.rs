@@ -20,8 +20,8 @@ impl Service<Request<IncomingBody>> for Svc {
 
     fn call(&self, req: Request<IncomingBody>) -> Self::Future {
         let routes = self.routes.lock().unwrap().to_vec();
+        let response = IngressRequestHandler {}.proxy_to_service(req, routes);
 
-        let response = IngressRequestHandler.proxy_to_service(req, routes);
         Box::pin(response)
     }
 }
