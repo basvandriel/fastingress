@@ -9,19 +9,13 @@ use std::time::Instant;
 use crate::logger::Logger;
 use crate::proxy::proxy_response;
 use crate::proxy::R;
+use crate::route_entry::RouteEntry;
 use crate::service_resolver::running_in_kubernetes_cluster;
 use crate::service_resolver::KubeServiceLocation;
 use crate::types::RouteMap;
 use crate::uri_resolver::InClusterServiceURLResolver;
 use crate::uri_resolver::ProxiedServiceURLResolver;
 use crate::uri_resolver::UrlResolver;
-
-struct RouteEntry {
-    pub host: String,
-    pub route: String,
-    pub service: String,
-    pub port: i32,
-}
 
 type RQ = Request<Incoming>;
 
