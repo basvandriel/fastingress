@@ -83,12 +83,17 @@ impl IngressRequestHandler {
 
         return entries;
     }
-    fn debug_routes(&self, x: &RouteMap, logger: Logger) {
-        let mut entries: Vec<RouteEntry> = vec![];
 
-        for route in x.iter() {
-            entries.append(&mut self.resolve_rule_entries(route));
-        }
+    fn resolve_route_entries(&self, routemap: &RouteMap) -> Vec<RouteEntry> {
+        let entries: Vec<RouteEntry> = routemap
+            .iter()
+            .flat_map(|route| self.resolve_rule_entries(route))
+            .collect();
+
+        return entries;
+    }
+
+    fn debug_routes(&self, route_entries: &Vec<RouteEntry>, logger: Logger) {
         logger.info("Available routes:");
         println!("");
         println!(
@@ -96,7 +101,7 @@ impl IngressRequestHandler {
             "host", "route", "service", "port"
         );
 
-        for entry in entries.iter().clone() {
+        for entry in route_entries.iter().clone() {
             println!(
                 "{0: <20} | {1: <10} | {2: <20} | {3: <10}",
                 entry.host, entry.route, entry.service, entry.port
@@ -109,7 +114,9 @@ impl IngressRequestHandler {
         let logger: Logger = Logger {};
         let start = Instant::now();
 
-        self.debug_routes(&x, logger);
+        let entries = self.resolve_route_entries(&x);
+        self.debug_routes(&entries, logger);
+
         let request_id = Alphanumeric.sample_string(&mut rand::thread_rng(), 8);
 
         let logmsg = format!(
