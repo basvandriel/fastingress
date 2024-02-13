@@ -14,3 +14,10 @@ spec:
             name: nginx-service3
             port:
               number: 80
+      - path: /bas2
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-service3
+            port:
+              number: 80
