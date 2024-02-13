@@ -23,16 +23,6 @@ type RQ = Request<Incoming>;
 pub struct IngressRequestHandler {}
 
 impl IngressRequestHandler {
-    fn log_request(&self, duration_ms: u128, request_id: &str) {
-        let message = format!(
-            "Request \"{}\" finished - took {}ms",
-            request_id, duration_ms
-        );
-
-        let logger = Logger {};
-        logger.info(&message);
-    }
-
     fn build_url_resolver(&self, original_uri: Uri) -> Box<dyn UrlResolver> {
         if running_in_kubernetes_cluster() {
             return Box::new(InClusterServiceURLResolver {
@@ -113,20 +103,23 @@ impl IngressRequestHandler {
 
         let request_id = Alphanumeric.sample_string(&mut rand::thread_rng(), 8);
 
-        let logmsg = format!(
+        logger.info(&format!(
             "Incoming request (\"{}\"): {} \"{}\"",
             request_id,
             request.method(),
             request.uri(),
-        );
-        logger.info(&logmsg);
+        ));
 
         let url = self.resolve_url(request.uri()).await;
 
         // TODO use everything from original request (method, body, ...)
         let result = proxy_response(url).await?;
 
-        self.log_request(start.elapsed().as_millis(), &request_id);
+        logger.info(&format!(
+            "Request \"{}\" finished - took {}ms",
+            request_id,
+            start.elapsed().as_millis()
+        ));
         return Ok(result);
     }
 }
