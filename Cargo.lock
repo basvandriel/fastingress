@@ -311,6 +311,7 @@ dependencies = [
  "hyper-util",
  "k8s-openapi",
  "kube",
+ "rand",
  "reqwest",
  "serde",
  "serde_json",

@@ -1,8 +1,9 @@
 use futures::{pin_mut, TryStreamExt};
 use k8s_openapi::api::networking::v1::{Ingress, IngressRule, IngressSpec};
 
-use crate::constants::INGRESS_CLASSNAME;
 use crate::logger::Logger;
+use crate::types::Arced;
+use crate::{constants::INGRESS_CLASSNAME, types::RouteMap};
 use kube::{
     runtime::{watcher, WatchStreamExt},
     Api, Client,
@@ -10,16 +11,21 @@ use kube::{
 
 pub struct APIListener {
     pub logger: Logger,
+    pub routes: Arced<RouteMap>,
 }
 
 impl APIListener {
-    fn handle_ingress(&self, ingress: &IngressSpec) {
+    async fn handle_ingress(&self, ingress: &IngressSpec) {
         let rules: Vec<IngressRule> = ingress
             .to_owned()
             .rules
             .expect("Ingress Rules should be there");
+        self.logger.info("Processing Ingress definition...");
 
-        self.logger.info("Ingress resource found, processing...");
+        for rule in rules.iter() {
+            let mut x = self.routes.lock().unwrap();
+            x.push(rule.clone());
+        }
     }
 
     fn resolve_ingress_class<'a>(&'a self, ingress: &'a Ingress) -> &String {
@@ -52,7 +58,7 @@ impl APIListener {
             if self.resolve_ingress_class(&ingress) != INGRESS_CLASSNAME {
                 continue;
             }
-            self.handle_ingress(&ingress.spec.unwrap());
+            self.handle_ingress(&ingress.spec.unwrap()).await;
         }
     }
 }

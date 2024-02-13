@@ -1,16 +1,16 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: minimal-ingress-configuration
+  name: minimal-ingress-configuration2
 spec:
   ingressClassName: fastingress
   rules:
   - http:
       paths:
-      - path: /
+      - path: /bas
         pathType: Prefix
         backend:
           service:
-            name: nginx-service3
+            name: nginx-service5
             port:
               number: 80
