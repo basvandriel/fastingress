@@ -4,7 +4,7 @@ use k8s_openapi::api::networking::v1::{HTTPIngressPath, Ingress, IngressRule, In
 use crate::constants::INGRESS_CLASSNAME;
 use crate::logger::Logger;
 use crate::route_entry::RouteEntry;
-use crate::types::{Arced, NewRouteMap};
+use crate::types::Arced;
 use kube::{
     runtime::{watcher, WatchStreamExt},
     Api, Client,
@@ -12,7 +12,7 @@ use kube::{
 
 pub struct APIListener {
     pub logger: Logger,
-    pub routes: Arced<NewRouteMap>,
+    pub routes: Arced<Vec<RouteEntry>>,
 }
 
 impl APIListener {

@@ -10,7 +10,6 @@ use crate::proxy::R;
 use crate::route_entry::RouteEntry;
 use crate::service_resolver::running_in_kubernetes_cluster;
 use crate::service_resolver::KubeServiceLocation;
-use crate::types::NewRouteMap;
 use crate::uri_resolver::InClusterServiceURLResolver;
 use crate::uri_resolver::ProxiedServiceURLResolver;
 use crate::uri_resolver::UrlResolver;
@@ -60,7 +59,7 @@ impl IngressRequestHandler {
         println!("");
     }
 
-    pub async fn proxy_to_service(&self, request: RQ, x: NewRouteMap) -> Result<R, ErrorType> {
+    pub async fn proxy_to_service(&self, request: RQ, x: Vec<RouteEntry>) -> Result<R, ErrorType> {
         let logger: Logger = Logger {};
         let start = Instant::now();
 
