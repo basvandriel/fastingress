@@ -5,6 +5,7 @@ use crate::constants::INGRESS_CLASSNAME;
 use crate::logger::Logger;
 use crate::route_entry::RouteEntry;
 use crate::types::Arced;
+
 use kube::{
     runtime::{watcher, WatchStreamExt},
     Api, Client,
@@ -12,7 +13,7 @@ use kube::{
 
 pub struct APIListener {
     pub logger: Logger,
-    pub routes: Arced<Vec<RouteEntry>>,
+    // pub routes: Arced<Vec<RouteEntry>>,
 }
 
 impl APIListener {
@@ -36,6 +37,11 @@ impl APIListener {
                 // Will be set later
                 ingress_name: String::new(),
             };
+
+            self.logger.info(&format!(
+                "Routing \"{}\" to \"{}\" on port {}",
+                &x.route, &x.service, &x.port
+            ));
             entries.push(x);
         }
         entries
@@ -56,32 +62,26 @@ impl APIListener {
             .collect()
     }
 
-    async fn handle_ingress(&self, ingress: &IngressSpec, name: &String) {
+    async fn resolve_ingress(&self, ingress: &IngressSpec, name: &String) -> Vec<RouteEntry> {
         let rules: Vec<IngressRule> = ingress
             .to_owned()
             .rules
             .expect("Ingress Rules should be there");
 
-        self.logger.info("Processing Ingress definition...");
-        let mut entries = self.resolve_route_entries(&rules, name);
-
-        let mut x = self.routes.lock().unwrap();
-        x.append(&mut entries);
+        self.resolve_route_entries(&rules, name)
     }
 
     fn resolve_ingress_class<'a>(&'a self, ingress: &'a Ingress) -> &String {
-        let cn = ingress
+        ingress
             .spec
             .as_ref()
             .expect("spec should be there")
             .ingress_class_name
             .as_ref()
-            .expect("class name should be there");
-
-        cn
+            .expect("class name should be there")
     }
 
-    pub async fn listen(&self) {
+    pub async fn listen(&self, routemap: Arced<Vec<RouteEntry>>) {
         let client = Client::try_default().await.expect("Kube client");
         let api = Api::<Ingress>::default_namespaced(client);
 
@@ -97,13 +97,17 @@ impl APIListener {
 
         while let Some(ingress) = stream.try_next().await.unwrap() {
             let ingress_class = self.resolve_ingress_class(&ingress);
-            let ingress_name = ingress.metadata.name.as_ref().unwrap();
 
             if ingress_class != INGRESS_CLASSNAME {
                 continue;
             }
-            self.handle_ingress(&ingress.spec.unwrap(), ingress_name)
+            let ingress_name = ingress.metadata.name.as_ref().unwrap();
+
+            let routes = self
+                .resolve_ingress(&ingress.spec.unwrap(), ingress_name)
                 .await;
+
+            routes.lock().unwrap().extend(routes);
         }
     }
 }

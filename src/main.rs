@@ -35,7 +35,7 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     // it already receives the nessacery data. If we just have a place
     // for storage. That should be good
     spawn(async move {
-        APIListener { logger, routes }.listen().await;
+        APIListener { logger }.listen(routes).await;
     });
 
     let address = SocketAddr::from((resolve_ip(), DEFAULT_LISTENING_PORT));
@@ -44,7 +44,10 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         logger,
         routes: routes_clone,
     };
-    logger.info(format!("Listening for new TCP connections on http://{}", address).as_str());
+    logger.info(&format!(
+        "Listening for new TCP connections on http://{}",
+        address
+    ));
 
     loop {
         let (stream, _) = listener.accept().await?;
