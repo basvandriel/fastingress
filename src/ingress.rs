@@ -1,8 +1,6 @@
 use hyper::body::Incoming;
 use hyper::Request;
 use hyper::Uri;
-use k8s_openapi::api::networking::v1::HTTPIngressPath;
-use k8s_openapi::api::networking::v1::IngressRule;
 use rand::distributions::{Alphanumeric, DistString};
 use std::time::Instant;
 
@@ -12,7 +10,6 @@ use crate::proxy::R;
 use crate::route_entry::RouteEntry;
 use crate::service_resolver::running_in_kubernetes_cluster;
 use crate::service_resolver::KubeServiceLocation;
-use crate::types::RouteMap;
 use crate::uri_resolver::InClusterServiceURLResolver;
 use crate::uri_resolver::ProxiedServiceURLResolver;
 use crate::uri_resolver::UrlResolver;
@@ -45,60 +42,28 @@ impl IngressRequestHandler {
         return url.expect("URI should be there");
     }
 
-    fn resolve_rule_entries(&self, route: &IngressRule) -> Vec<RouteEntry> {
-        let http = route.http.as_ref().unwrap();
-        let paths: Vec<HTTPIngressPath> = http.paths.clone();
-
-        let mut entries: Vec<RouteEntry> = vec![];
-
-        for pathobj in paths.iter() {
-            let path = pathobj.path.as_ref().unwrap();
-            let service = pathobj.backend.service.as_ref().unwrap();
-            let port = service.port.as_ref().unwrap().number.unwrap();
-
-            let x = RouteEntry {
-                host: "localhost".to_string(),
-                port,
-                route: path.to_owned(),
-                service: service.name.to_owned(),
-            };
-            entries.push(x);
-        }
-
-        return entries;
-    }
-
-    fn resolve_route_entries(&self, routemap: &RouteMap) -> Vec<RouteEntry> {
-        let entries: Vec<RouteEntry> = routemap
-            .iter()
-            .flat_map(|route| self.resolve_rule_entries(route))
-            .collect();
-
-        return entries;
-    }
-
     fn debug_routes(&self, route_entries: &Vec<RouteEntry>, logger: Logger) {
         logger.info("Available routes:");
         println!("");
         println!(
-            "{0: <20} | {1: <10} | {2: <20} | {3: <10}",
-            "host", "route", "service", "port"
+            "{0: <35} | {1: <15} | {2: <10} | {3: <20} | {4: <10}",
+            "ingress_name", "host", "route", "service", "port"
         );
 
         for entry in route_entries.iter().clone() {
             println!(
-                "{0: <20} | {1: <10} | {2: <20} | {3: <10}",
-                entry.host, entry.route, entry.service, entry.port
+                "{0: <35} | {1: <15} | {2: <10} | {3: <20} | {4: <10}",
+                entry.ingress_name, entry.host, entry.route, entry.service, entry.port
             );
         }
         println!("");
     }
 
-    pub async fn proxy_to_service(&self, request: RQ, x: RouteMap) -> Result<R, ErrorType> {
+    pub async fn proxy_to_service(&self, request: RQ, x: Vec<RouteEntry>) -> Result<R, ErrorType> {
         let logger: Logger = Logger {};
         let start = Instant::now();
 
-        let entries = self.resolve_route_entries(&x);
+        let entries = x;
         self.debug_routes(&entries, logger);
 
         let request_id = Alphanumeric.sample_string(&mut rand::thread_rng(), 8);
