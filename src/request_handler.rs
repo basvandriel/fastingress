@@ -11,7 +11,7 @@ use std::pin::Pin;
 #[derive(Clone)]
 pub struct Svc {
     pub logger: Logger,
-    pub routes: Arced<Vec<RouteEntry>>,
+    pub routes_clone: Arced<Vec<RouteEntry>>,
 }
 
 impl Service<Request<IncomingBody>> for Svc {
@@ -20,8 +20,9 @@ impl Service<Request<IncomingBody>> for Svc {
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
 
     fn call(&self, req: Request<IncomingBody>) -> Self::Future {
-        let routes = self.routes.lock().unwrap().to_vec();
-        let response = IngressRequestHandler {}.proxy_to_service(req, routes);
+        let r: Vec<RouteEntry> = vec![];
+        // let routes = self.routes.lock().unwrap().to_vec();
+        let response = IngressRequestHandler {}.proxy_to_service(req, r);
 
         Box::pin(response)
     }

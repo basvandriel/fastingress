@@ -28,22 +28,23 @@ fn resolve_ip() -> Ipv4Addr {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let logger = Logger {};
+
     let routes: Arced<Vec<RouteEntry>> = Arc::new(Mutex::new(vec![]));
     let routes_clone = routes.clone();
 
-    // We actually dont' need a seperate MPSC.
-    // it already receives the nessacery data. If we just have a place
-    // for storage. That should be good
     spawn(async move {
-        APIListener { logger }.listen(routes).await;
+        APIListener { logger, routes }.listen().await;
     });
 
     let address = SocketAddr::from((resolve_ip(), DEFAULT_LISTENING_PORT));
     let listener = TcpListener::bind(address).await?;
+
+    // let unpacked_routes = routes_clone.lock().unwrap();
     let svc = Svc {
         logger,
-        routes: routes_clone,
+        routes_clone,
     };
+
     logger.info(&format!(
         "Listening for new TCP connections on http://{}",
         address
@@ -54,7 +55,6 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
         let io = TokioIo::new(stream);
 
         let svc_clone = svc.clone();
-
         // Open a thread for every connection we get.
         // this is needed so we can handle more requests at once
         spawn(async move {

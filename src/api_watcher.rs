@@ -13,7 +13,7 @@ use kube::{
 
 pub struct APIListener {
     pub logger: Logger,
-    // pub routes: Arced<Vec<RouteEntry>>,
+    pub routes: Arced<Vec<RouteEntry>>,
 }
 
 impl APIListener {
@@ -81,7 +81,7 @@ impl APIListener {
             .expect("class name should be there")
     }
 
-    pub async fn listen(&self, routemap: Arced<Vec<RouteEntry>>) {
+    pub async fn listen(self) {
         let client = Client::try_default().await.expect("Kube client");
         let api = Api::<Ingress>::default_namespaced(client);
 
@@ -107,7 +107,7 @@ impl APIListener {
                 .resolve_ingress(&ingress.spec.unwrap(), ingress_name)
                 .await;
 
-            routes.lock().unwrap().extend(routes);
+            self.routes.lock().unwrap().extend(routes);
         }
     }
 }
