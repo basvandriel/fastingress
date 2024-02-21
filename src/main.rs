@@ -33,7 +33,9 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let routes_clone = routes.clone();
 
     spawn(async move {
-        APIListener { logger, routes }.listen().await;
+        // TODO Maybe just set the entire routes in here.
+        let listener = APIListener { logger, routes };
+        listener.listen().await;
     });
 
     let address = SocketAddr::from((resolve_ip(), DEFAULT_LISTENING_PORT));
