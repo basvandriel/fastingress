@@ -23,6 +23,6 @@ jobs:
     - name: Build
       run: cargo build
     - name: Lint
-      run: cargo clippy -- -D warnings
+      run: make lint
     - name: Run tests
       run: cargo test --verbose
