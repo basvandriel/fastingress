@@ -22,7 +22,7 @@ fn resolve_ip() -> Ipv4Addr {
         println!("INFO: Detected HOST_OUT=1 in environment");
         return Ipv4Addr::UNSPECIFIED;
     }
-    return Ipv4Addr::LOCALHOST;
+    Ipv4Addr::LOCALHOST
 }
 
 #[tokio::main]
@@ -41,7 +41,6 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let address = SocketAddr::from((resolve_ip(), DEFAULT_LISTENING_PORT));
     let listener = TcpListener::bind(address).await?;
 
-    // let unpacked_routes = routes_clone.lock().unwrap();
     let svc = Svc {
         logger,
         routes_clone,

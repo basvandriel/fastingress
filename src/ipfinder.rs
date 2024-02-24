@@ -28,7 +28,7 @@ impl ProxiedServiceIPFinder {
 
         let mut sender: SendRequest<Empty<Bytes>> = handshake_url::<BodyType>(&service_url).await;
 
-        return sender.send_request(req).await.unwrap();
+        sender.send_request(req).await.unwrap()
     }
 
     pub async fn find(&self, service_location: &KubeServiceLocation) -> Option<Ipv4Addr> {
@@ -49,6 +49,6 @@ impl ProxiedServiceIPFinder {
 
         let clusterip = service.spec.cluster_ip;
 
-        return Some(clusterip);
+        Some(clusterip)
     }
 }

@@ -26,5 +26,5 @@ pub async fn proxy_response(uri: Uri) -> Result<R, ErrorType> {
     let res = sender.send_request(req).await?;
     let mapped = res.map(|i| i.boxed());
 
-    return Ok(mapped);
+    Ok(mapped)
 }

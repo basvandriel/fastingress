@@ -5,7 +5,7 @@ use hyper::Uri;
 use crate::constants::{DEFAULT_CLUSTER_IP, DEFAULT_PROXY_PORT};
 
 pub fn running_in_kubernetes_cluster() -> bool {
-    return env::var("KUBERNETES_SERVICE_HOST").is_ok();
+    env::var("KUBERNETES_SERVICE_HOST").is_ok()
 }
 
 pub struct KubeServiceLocation {
@@ -24,7 +24,7 @@ pub fn resolve_service_uri(service_loc: &KubeServiceLocation) -> Uri {
     url += &format!("/api/v1/namespaces/{}/services/", service_loc.namespace);
     url += &service_loc.name;
 
-    return url.parse::<Uri>().unwrap();
+    url.parse::<Uri>().unwrap()
 }
 
 pub fn build_service_proxy_url(service_loc: &KubeServiceLocation, original_uri: &Uri) -> Uri {
@@ -36,5 +36,5 @@ pub fn build_service_proxy_url(service_loc: &KubeServiceLocation, original_uri: 
     if let Some(path_and_query) = original_uri.path_and_query() {
         service_url += &path_and_query.to_string();
     }
-    return service_url.parse::<Uri>().unwrap();
+    service_url.parse::<Uri>().unwrap()
 }
