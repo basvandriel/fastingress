@@ -26,9 +26,9 @@ impl IngressRequestHandler {
                 original_url: original_uri,
             });
         }
-        return Box::new(ProxiedServiceURLResolver {
+        Box::new(ProxiedServiceURLResolver {
             original_url: original_uri,
-        });
+        })
     }
 
     async fn resolve_url(&self, original_uri: &Uri) -> Uri {
@@ -39,7 +39,7 @@ impl IngressRequestHandler {
         };
         let url = self.build_url_resolver(original_uri.clone()).resolve(&loc);
 
-        return url.expect("URI should be there");
+        url.expect("URI should be there")
     }
 
     fn debug_routes(&self, route_entries: &Vec<RouteEntry>, logger: Logger) {
@@ -85,7 +85,7 @@ impl IngressRequestHandler {
             request_id,
             start.elapsed().as_millis()
         ));
-        return Ok(result);
+        Ok(result)
     }
 }
 

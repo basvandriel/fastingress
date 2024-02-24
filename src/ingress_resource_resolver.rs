@@ -15,7 +15,7 @@ impl LocalAPIIngressResourceResolver {
         url += "apis/networking.k8s.io/v1/";
         url += "ingresses?watch=true";
 
-        return url.parse::<Uri>().expect("Parsing should work");
+        url.parse::<Uri>().expect("Parsing should work")
     }
 
     pub async fn resolve(&self) {

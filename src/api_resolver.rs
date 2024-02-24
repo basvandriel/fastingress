@@ -10,5 +10,5 @@ pub fn resolve_in_cluster_uri() -> Option<Uri> {
     let base: String = env::var("KUBERNETES_SERVICE_HOST").unwrap();
     let uri = format!("https://{}/api", base).parse::<Uri>();
 
-    return Some(uri.expect("should work here"));
+    Some(uri.expect("should work here"))
 }

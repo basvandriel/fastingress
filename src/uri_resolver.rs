@@ -19,7 +19,7 @@ impl UrlResolver for ProxiedServiceURLResolver {
         if let Some(path_and_query) = self.original_url.path_and_query() {
             service_url += &path_and_query.to_string();
         }
-        return Some(service_url.parse::<Uri>().unwrap());
+        Some(service_url.parse::<Uri>().unwrap())
     }
 }
 
@@ -35,7 +35,7 @@ impl UrlResolver for InClusterServiceURLResolver {
         if let Some(path_and_query) = self.original_url.path_and_query() {
             uri += &path_and_query.to_string();
         }
-        return Some(uri.parse::<Uri>().expect("Should parse service"));
+        Some(uri.parse::<Uri>().expect("Should parse service"))
     }
 }
 impl InClusterServiceURLResolver {
