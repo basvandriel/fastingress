@@ -20,10 +20,9 @@ jobs:
       run: bash scripts/prepare-test.sh
     - name: Verify Kubernetes Proxy connectivity
       run: bash scripts/verify-proxy-api.sh
-    - name: Lint check
-      run: cargo clippy -- -D warnings
-
     - name: Build
       run: cargo build
+    - name: Lint
+      run: cargo clippy -- -D warnings
     - name: Run tests
       run: cargo test --verbose
