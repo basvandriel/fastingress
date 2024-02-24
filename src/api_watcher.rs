@@ -49,7 +49,7 @@ impl APIListener {
 
     fn resolve_route_entries(
         &self,
-        routemap: &Vec<IngressRule>,
+        routemap: &[IngressRule],
         ingress_name: &String,
     ) -> Vec<RouteEntry> {
         routemap

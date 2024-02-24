@@ -3,7 +3,7 @@ use serde_json::Value;
 use crate::{constants::INGRESS_CLASSNAME, kube_api_structs::KubeAPIObjectSpecRule};
 
 pub fn parse_ingress_rules(json: &str) -> Vec<KubeAPIObjectSpecRule> {
-    let root: Value = serde_json::from_str(&json).expect("Should parse");
+    let root: Value = serde_json::from_str(json).expect("Should parse");
     let entries: &Value = &root["object"].as_object().unwrap()["spec"];
 
     if entries["ingressClassName"] != INGRESS_CLASSNAME {
