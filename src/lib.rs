@@ -19,3 +19,4 @@ pub mod ingress_resource_json_parser;
 pub mod api_watcher;
 pub mod ingress_resource_resolver;
 pub mod route_entry;
+pub mod routedebugger;

@@ -8,6 +8,7 @@ use crate::logger::Logger;
 use crate::proxy::proxy_response;
 use crate::proxy::R;
 use crate::route_entry::RouteEntry;
+use crate::routedebugger::RouteDebugger;
 use crate::service_resolver::running_in_kubernetes_cluster;
 use crate::service_resolver::KubeServiceLocation;
 use crate::uri_resolver::InClusterServiceURLResolver;
@@ -42,30 +43,15 @@ impl IngressRequestHandler {
         url.expect("URI should be there")
     }
 
-    fn debug_routes(&self, route_entries: &[RouteEntry], logger: Logger) {
-        logger.info("Available routes:");
-        println!();
-        println!(
-            "{0: <35} | {1: <15} | {2: <10} | {3: <20} | {4: <10}",
-            "ingress_name", "host", "route", "service", "port"
-        );
-
-        for entry in route_entries.iter().clone() {
-            println!(
-                "{0: <35} | {1: <15} | {2: <10} | {3: <20} | {4: <10}",
-                entry.ingress_name, entry.host, entry.route, entry.service, entry.port
-            );
-        }
-        println!();
-    }
-
-    pub async fn proxy_to_service(&self, request: RQ, x: Vec<RouteEntry>) -> Result<R, ErrorType> {
+    pub async fn proxy_to_service(
+        &self,
+        request: RQ,
+        routes: Vec<RouteEntry>,
+    ) -> Result<R, ErrorType> {
         let logger: Logger = Logger {};
         let start = Instant::now();
 
-        let entries = x;
-        self.debug_routes(&entries, logger);
-
+        RouteDebugger::new(logger).debug(&routes);
         let request_id = Alphanumeric.sample_string(&mut rand::thread_rng(), 8);
 
         logger.info(&format!(
