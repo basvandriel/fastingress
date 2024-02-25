@@ -5,4 +5,5 @@ pub struct RouteEntry {
     pub route: String,
     pub service: String,
     pub port: i32,
+    pub namespace: String,
 }
