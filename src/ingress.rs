@@ -38,11 +38,10 @@ impl IngressRequestHandler {
     }
 
     fn matchpath(&self, path: &str) -> Option<&RouteEntry> {
-        let result = self.routes.iter().find(|r| r.route == path);
-        result
+        self.routes.iter().find(|r| r.route == path)
     }
 
-    async fn resolve_url(&self, original_uri: &Uri) -> Uri {
+    fn resolve_url(&self, original_uri: &Uri) -> Uri {
         let logger = Logger {};
         RouteDebugger::new(logger).debug(&self.routes);
 
@@ -72,8 +71,7 @@ impl IngressRequestHandler {
             request.method(),
             request.uri(),
         ));
-
-        let url = self.resolve_url(request.uri()).await;
+        let url = self.resolve_url(request.uri());
 
         // TODO use everything from original request (method, body, ...)
         let result = proxy_response(url).await?;
