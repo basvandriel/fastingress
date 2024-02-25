@@ -55,7 +55,7 @@ impl IngressRequestHandler {
 
         let url = self
             .build_url_resolver(original_uri.clone())
-            .resolve(&servicelocation);
+            .resolve(servicelocation);
 
         url.expect("URI should be there")
     }
