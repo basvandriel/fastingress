@@ -38,16 +38,25 @@ impl IngressRequestHandler {
         })
     }
 
+    fn matchpath(&self, path: &str) -> Option<&RouteEntry> {
+        let result = self.routes.iter().find(|r| r.route == path);
+        result
+    }
+
     async fn resolve_url(&self, original_uri: &Uri) -> Uri {
         let logger = Logger {};
         RouteDebugger::new(logger).debug(&self.routes);
 
-        let loc = KubeServiceLocation {
-            namespace: String::from("default"),
-            name: String::from("nginx-service"),
-            port: 80,
-        };
-        let url = self.build_url_resolver(original_uri.clone()).resolve(&loc);
+        let resolved = self.matchpath(original_uri.path());
+
+        if resolved.is_none() {
+            logger.info("No suiting routes found. Aborting");
+        }
+        let servicelocation = resolved.unwrap().to_kube_servicelocation();
+
+        let url = self
+            .build_url_resolver(original_uri.clone())
+            .resolve(&servicelocation);
 
         url.expect("URI should be there")
     }
@@ -56,7 +65,6 @@ impl IngressRequestHandler {
         let logger: Logger = Logger {};
         let start = Instant::now();
 
-        // RouteDebugger::new(logger).debug(&routes);
         let request_id = Alphanumeric.sample_string(&mut rand::thread_rng(), 8);
 
         logger.info(&format!(

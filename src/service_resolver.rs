@@ -11,7 +11,7 @@ pub fn running_in_kubernetes_cluster() -> bool {
 pub struct KubeServiceLocation {
     pub namespace: String,
     pub name: String,
-    pub port: u16,
+    pub port: i32,
 }
 
 pub fn resolve_service_uri(service_loc: &KubeServiceLocation) -> Uri {
