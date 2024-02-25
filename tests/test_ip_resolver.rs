@@ -1,12 +1,15 @@
-use fastingress::service_resolver::{build_service_proxy_url, KubeServiceLocation};
+use fastingress::{route_entry::RouteEntry, service_resolver::build_service_proxy_url};
 use hyper::Uri;
 
 #[test]
 fn it_finds_correct_service() {
-    let loc = KubeServiceLocation {
+    let loc = RouteEntry {
         namespace: String::from("default"),
-        name: String::from("nginx-service"),
+        service: "nginx-service".to_string(),
+        ingress_name: "nomatter".to_string(),
         port: 80,
+        route: "/".to_owned(),
+        host: "localhost".to_owned(),
     };
 
     let currentip = "http://localhost:3000/ip".parse::<Uri>().unwrap();

@@ -1,16 +1,16 @@
 use hyper::Uri;
 
-use crate::service_resolver::{resolve_service_uri, KubeServiceLocation};
+use crate::{route_entry::RouteEntry, service_resolver::resolve_service_uri};
 
 pub trait UrlResolver {
-    fn resolve(&self, loc: &KubeServiceLocation) -> Option<Uri>;
+    fn resolve(&self, loc: &RouteEntry) -> Option<Uri>;
 }
 
 pub struct ProxiedServiceURLResolver {
     pub original_url: Uri,
 }
 impl UrlResolver for ProxiedServiceURLResolver {
-    fn resolve(&self, loc: &KubeServiceLocation) -> Option<Uri> {
+    fn resolve(&self, loc: &RouteEntry) -> Option<Uri> {
         let mut service_url = resolve_service_uri(loc).to_string();
 
         service_url += &format!(":{}", loc.port);
@@ -27,8 +27,8 @@ pub struct InClusterServiceURLResolver {
     pub original_url: Uri,
 }
 impl UrlResolver for InClusterServiceURLResolver {
-    fn resolve(&self, loc: &KubeServiceLocation) -> Option<Uri> {
-        let mut uri = format!("http://{}.{}.svc.", loc.name, loc.namespace);
+    fn resolve(&self, loc: &RouteEntry) -> Option<Uri> {
+        let mut uri = format!("http://{}.{}.svc.", loc.service, loc.namespace);
         uri += Self::DEFAULT_CLUSTER_DNS_SUFFIX;
         uri += "/";
 

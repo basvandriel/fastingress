@@ -1,6 +1,6 @@
 use fastingress::{
     api_resolver::resolve_in_cluster_uri,
-    service_resolver::KubeServiceLocation,
+    route_entry::RouteEntry,
     uri_resolver::{InClusterServiceURLResolver, UrlResolver},
 };
 use hyper::Uri;
@@ -13,10 +13,13 @@ fn it_should_panic() {
 
 #[test]
 fn it_should_generate_one() {
-    let loc = KubeServiceLocation {
+    let loc = RouteEntry {
         namespace: String::from("default"),
-        name: String::from("nginx-service"),
+        service: "nginx-service".to_string(),
+        ingress_name: "nomatter".to_string(),
         port: 80,
+        route: "/".to_owned(),
+        host: "localhost".to_owned(),
     };
     let currentip = "http://localhost:3000/ip".parse::<Uri>().unwrap();
 

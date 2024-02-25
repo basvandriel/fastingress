@@ -10,7 +10,6 @@ use crate::proxy::R;
 use crate::route_entry::RouteEntry;
 use crate::routedebugger::RouteDebugger;
 use crate::service_resolver::running_in_kubernetes_cluster;
-use crate::service_resolver::KubeServiceLocation;
 use crate::uri_resolver::InClusterServiceURLResolver;
 use crate::uri_resolver::ProxiedServiceURLResolver;
 use crate::uri_resolver::UrlResolver;
@@ -52,7 +51,7 @@ impl IngressRequestHandler {
         if resolved.is_none() {
             logger.info("No suiting routes found. Aborting");
         }
-        let servicelocation = resolved.unwrap().to_kube_servicelocation();
+        let servicelocation = resolved.unwrap();
 
         let url = self
             .build_url_resolver(original_uri.clone())
