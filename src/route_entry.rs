@@ -1,4 +1,4 @@
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct RouteEntry {
     pub ingress_name: String,
     pub host: String,

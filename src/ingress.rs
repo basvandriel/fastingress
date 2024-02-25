@@ -18,9 +18,15 @@ use crate::uri_resolver::UrlResolver;
 type RQ = Request<Incoming>;
 
 #[derive(Debug, Clone)]
-pub struct IngressRequestHandler {}
+pub struct IngressRequestHandler {
+    routes: Vec<RouteEntry>,
+}
 
 impl IngressRequestHandler {
+    pub fn new(routes: Vec<RouteEntry>) -> Self {
+        Self { routes }
+    }
+
     fn build_url_resolver(&self, original_uri: Uri) -> Box<dyn UrlResolver> {
         if running_in_kubernetes_cluster() {
             return Box::new(InClusterServiceURLResolver {
@@ -33,6 +39,9 @@ impl IngressRequestHandler {
     }
 
     async fn resolve_url(&self, original_uri: &Uri) -> Uri {
+        let logger = Logger {};
+        RouteDebugger::new(logger).debug(&self.routes);
+
         let loc = KubeServiceLocation {
             namespace: String::from("default"),
             name: String::from("nginx-service"),
@@ -43,15 +52,11 @@ impl IngressRequestHandler {
         url.expect("URI should be there")
     }
 
-    pub async fn proxy_to_service(
-        &self,
-        request: RQ,
-        routes: Vec<RouteEntry>,
-    ) -> Result<R, ErrorType> {
+    pub async fn proxy_to_service(&self, request: RQ) -> Result<R, ErrorType> {
         let logger: Logger = Logger {};
         let start = Instant::now();
 
-        RouteDebugger::new(logger).debug(&routes);
+        // RouteDebugger::new(logger).debug(&routes);
         let request_id = Alphanumeric.sample_string(&mut rand::thread_rng(), 8);
 
         logger.info(&format!(
