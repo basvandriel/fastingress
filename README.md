@@ -1,6 +1,7 @@
 # fastingress
 Lightning fast Kubernetes Ingress Controller powered by Hyper.
 
+
 ## debugging 
 
 See [this link](https://code.visualstudio.com/docs/languages/rust#_debugging). See the `launch.json` example below:
@@ -53,3 +54,6 @@ Now, to run the project, use the following command.
 ```bash
 cargo watch -x run
 ```
+
+### Linting
+Clean code is required. We can assure a part of this by linting. Use the `make lint` command to check on the rules. This is being enforced in the pipeline.

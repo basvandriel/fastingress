@@ -22,5 +22,7 @@ jobs:
       run: bash scripts/verify-proxy-api.sh
     - name: Build
       run: cargo build
+    - name: Lint
+      run: make lint
     - name: Run tests
       run: cargo test --verbose

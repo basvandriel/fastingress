@@ -42,9 +42,9 @@ impl IngressRequestHandler {
         url.expect("URI should be there")
     }
 
-    fn debug_routes(&self, route_entries: &Vec<RouteEntry>, logger: Logger) {
+    fn debug_routes(&self, route_entries: &[RouteEntry], logger: Logger) {
         logger.info("Available routes:");
-        println!("");
+        println!();
         println!(
             "{0: <35} | {1: <15} | {2: <10} | {3: <20} | {4: <10}",
             "ingress_name", "host", "route", "service", "port"
@@ -56,7 +56,7 @@ impl IngressRequestHandler {
                 entry.ingress_name, entry.host, entry.route, entry.service, entry.port
             );
         }
-        println!("");
+        println!();
     }
 
     pub async fn proxy_to_service(&self, request: RQ, x: Vec<RouteEntry>) -> Result<R, ErrorType> {
