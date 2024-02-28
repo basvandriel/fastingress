@@ -21,4 +21,4 @@ pub mod ingress_resource_resolver;
 pub mod route_entry;
 pub mod routedebugger;
 
-mod routematching;
+pub mod routematching;
