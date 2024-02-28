@@ -5,7 +5,6 @@ use hyper::Request;
 use hyper::Response;
 use hyper::StatusCode;
 use hyper::Uri;
-use kube::api::Log;
 use rand::distributions::{Alphanumeric, DistString};
 use std::time::Instant;
 
@@ -14,6 +13,8 @@ use crate::proxy::proxy_response;
 use crate::proxy::R;
 use crate::route_entry::RouteEntry;
 use crate::routedebugger::RouteDebugger;
+use crate::routematching::matcher::RouteMatcher;
+use crate::routematching::matcher::StrictRouteMatcher;
 use crate::service_resolver::running_in_kubernetes_cluster;
 use crate::uri_resolver::InClusterServiceURLResolver;
 use crate::uri_resolver::ProxiedServiceURLResolver;
@@ -35,25 +36,23 @@ impl IngressRequestHandler {
         }
     }
 
-    fn build_url_resolver(&self, original_uri: Uri) -> Box<dyn UrlResolver> {
+    fn build_url_resolver(&self, original_url: Uri) -> Box<dyn UrlResolver> {
         if running_in_kubernetes_cluster() {
-            return Box::new(InClusterServiceURLResolver {
-                original_url: original_uri,
-            });
+            return Box::new(InClusterServiceURLResolver { original_url });
         }
-        Box::new(ProxiedServiceURLResolver {
-            original_url: original_uri,
-        })
+        Box::new(ProxiedServiceURLResolver { original_url })
     }
-
-    fn matchpath(&self, path: &str) -> Option<&RouteEntry> {
-        self.routes.iter().find(|r| r.route == path)
+    fn find_routematcher(&self) -> Box<dyn RouteMatcher> {
+        let matcher = StrictRouteMatcher {
+            existing_routes: self.routes.clone(),
+        };
+        Box::new(matcher)
     }
-
     fn resolve_url(&self, original_uri: &Uri) -> Option<Uri> {
         RouteDebugger::new(self.logger).debug(&self.routes);
 
-        let resolved = self.matchpath(original_uri.path());
+        let matcher = self.find_routematcher();
+        let resolved = matcher.find(original_uri.path());
 
         if resolved.is_none() {
             return None;
@@ -88,6 +87,7 @@ impl IngressRequestHandler {
             request.method(),
             request.uri(),
         ));
+
         let url = self.resolve_url(request.uri());
 
         if url.is_none() {
