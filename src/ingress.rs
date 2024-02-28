@@ -1,5 +1,9 @@
+use http_body_util::combinators::BoxBody;
+use hyper::body::Body;
+use hyper::body::Bytes;
 use hyper::body::Incoming;
 use hyper::Request;
+use hyper::Response;
 use hyper::Uri;
 use rand::distributions::{Alphanumeric, DistString};
 use std::time::Instant;
@@ -41,7 +45,7 @@ impl IngressRequestHandler {
         self.routes.iter().find(|r| r.route == path)
     }
 
-    fn resolve_url(&self, original_uri: &Uri) -> Uri {
+    fn resolve_url(&self, original_uri: &Uri) -> Option<Uri> {
         let logger = Logger {};
         RouteDebugger::new(logger).debug(&self.routes);
 
@@ -49,6 +53,7 @@ impl IngressRequestHandler {
 
         if resolved.is_none() {
             logger.info("No suiting routes found. Aborting");
+            return None;
         }
         let servicelocation = resolved.unwrap();
 
@@ -56,7 +61,7 @@ impl IngressRequestHandler {
             .build_url_resolver(original_uri.clone())
             .resolve(servicelocation);
 
-        url.expect("URI should be there")
+        Some(url.expect("URI should be there"))
     }
 
     pub async fn proxy_to_service(&self, request: RQ) -> Result<R, ErrorType> {
@@ -73,8 +78,16 @@ impl IngressRequestHandler {
         ));
         let url = self.resolve_url(request.uri());
 
+        if url.is_none() {
+            // From the current request, directly create an object
+            let body = BoxBody::<Bytes, hyper::Error>::new(request);
+            let response = Response::builder().status(500).body(body).unwrap();
+
+            return Ok(response);
+        }
+
         // TODO use everything from original request (method, body, ...)
-        let result = proxy_response(url).await?;
+        let result = proxy_response(url.unwrap()).await?;
 
         logger.info(&format!(
             "Request \"{}\" finished - took {}ms",
