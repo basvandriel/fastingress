@@ -89,12 +89,11 @@ impl IngressRequestHandler {
         if url.is_none() {
             logger.info("No suiting routes found for request. Aborting");
 
-            let body = BoxBody::<Bytes, hyper::Error>::new(request);
-            return self.notfound(body);
+            return self.notfound(BoxBody::new(request));
         }
 
         // TODO use everything from original request (method, body, ...)
-        let result = proxy_response(url.unwrap()).await?;
+        let result: Response<BoxBody<Bytes, hyper::Error>> = proxy_response(url.unwrap()).await?;
 
         logger.info(&format!(
             "Request \"{}\" finished - took {}ms",
