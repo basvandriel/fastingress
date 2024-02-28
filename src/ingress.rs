@@ -1,9 +1,9 @@
 use http_body_util::combinators::BoxBody;
-use hyper::body::Body;
 use hyper::body::Bytes;
 use hyper::body::Incoming;
 use hyper::Request;
 use hyper::Response;
+use hyper::StatusCode;
 use hyper::Uri;
 use rand::distributions::{Alphanumeric, DistString};
 use std::time::Instant;
@@ -52,7 +52,6 @@ impl IngressRequestHandler {
         let resolved = self.matchpath(original_uri.path());
 
         if resolved.is_none() {
-            logger.info("No suiting routes found. Aborting");
             return None;
         }
         let servicelocation = resolved.unwrap();
@@ -62,6 +61,15 @@ impl IngressRequestHandler {
             .resolve(servicelocation);
 
         Some(url.expect("URI should be there"))
+    }
+
+    fn notfound(&self, body: BoxBody<Bytes, hyper::Error>) -> Result<R, ErrorType> {
+        let response = Response::builder()
+            .status(StatusCode::NOT_FOUND)
+            .body(body)
+            .unwrap();
+
+        Ok(response)
     }
 
     pub async fn proxy_to_service(&self, request: RQ) -> Result<R, ErrorType> {
@@ -79,11 +87,10 @@ impl IngressRequestHandler {
         let url = self.resolve_url(request.uri());
 
         if url.is_none() {
-            // From the current request, directly create an object
-            let body = BoxBody::<Bytes, hyper::Error>::new(request);
-            let response = Response::builder().status(500).body(body).unwrap();
+            logger.info("No suiting routes found for request. Aborting");
 
-            return Ok(response);
+            let body = BoxBody::<Bytes, hyper::Error>::new(request);
+            return self.notfound(body);
         }
 
         // TODO use everything from original request (method, body, ...)
