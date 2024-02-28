@@ -19,8 +19,6 @@ impl Service<Request<IncomingBody>> for Svc {
     type Error = ErrorType;
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
 
-    // fn x(&self) {}
-
     fn call(&self, req: Request<IncomingBody>) -> Self::Future {
         let routes = self.routes_clone.lock().unwrap().to_vec();
 

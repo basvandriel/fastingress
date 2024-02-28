@@ -10,6 +10,10 @@ impl RouteDebugger {
     }
 
     pub fn debug(&self, routes: &[RouteEntry]) {
+        if routes.is_empty() {
+            return;
+        }
+
         self.logger.info("Available routes:");
         println!();
         println!(

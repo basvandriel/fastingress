@@ -5,6 +5,7 @@ use hyper::Request;
 use hyper::Response;
 use hyper::StatusCode;
 use hyper::Uri;
+use kube::api::Log;
 use rand::distributions::{Alphanumeric, DistString};
 use std::time::Instant;
 
@@ -23,11 +24,15 @@ type RQ = Request<Incoming>;
 #[derive(Debug, Clone)]
 pub struct IngressRequestHandler {
     routes: Vec<RouteEntry>,
+    logger: Logger,
 }
 
 impl IngressRequestHandler {
     pub fn new(routes: Vec<RouteEntry>) -> Self {
-        Self { routes }
+        Self {
+            routes,
+            logger: Logger {},
+        }
     }
 
     fn build_url_resolver(&self, original_uri: Uri) -> Box<dyn UrlResolver> {
@@ -46,8 +51,7 @@ impl IngressRequestHandler {
     }
 
     fn resolve_url(&self, original_uri: &Uri) -> Option<Uri> {
-        let logger = Logger {};
-        RouteDebugger::new(logger).debug(&self.routes);
+        RouteDebugger::new(self.logger).debug(&self.routes);
 
         let resolved = self.matchpath(original_uri.path());
 
@@ -64,6 +68,8 @@ impl IngressRequestHandler {
     }
 
     fn notfound(&self, body: BoxBody<Bytes, hyper::Error>) -> Result<R, ErrorType> {
+        self.logger.info("No routes found for request. Aborting");
+
         let response = Response::builder()
             .status(StatusCode::NOT_FOUND)
             .body(body)
@@ -73,12 +79,10 @@ impl IngressRequestHandler {
     }
 
     pub async fn proxy_to_service(&self, request: RQ) -> Result<R, ErrorType> {
-        let logger: Logger = Logger {};
         let start = Instant::now();
-
         let request_id = Alphanumeric.sample_string(&mut rand::thread_rng(), 8);
 
-        logger.info(&format!(
+        self.logger.info(&format!(
             "Incoming request (\"{}\"): {} \"{}\"",
             request_id,
             request.method(),
@@ -87,15 +91,13 @@ impl IngressRequestHandler {
         let url = self.resolve_url(request.uri());
 
         if url.is_none() {
-            logger.info("No suiting routes found for request. Aborting");
-
             return self.notfound(BoxBody::new(request));
         }
 
         // TODO use everything from original request (method, body, ...)
         let result: Response<BoxBody<Bytes, hyper::Error>> = proxy_response(url.unwrap()).await?;
 
-        logger.info(&format!(
+        self.logger.info(&format!(
             "Request \"{}\" finished - took {}ms",
             request_id,
             start.elapsed().as_millis()
