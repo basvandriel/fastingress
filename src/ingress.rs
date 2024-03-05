@@ -54,7 +54,9 @@ impl IngressRequestHandler {
         let matcher = self.find_routematcher();
         let resolved = matcher.find(original_uri.path());
 
+        // https://rust-lang.github.io/rust-clippy/master/index.html#/question_mark
         resolved?;
+
         let servicelocation = resolved.unwrap();
 
         let url = self
