@@ -1,4 +1,4 @@
-use crate::route_entry::{self, RouteEntry};
+use crate::route_entry::RouteEntry;
 
 use super::matcher::RouteMatcher;
 
@@ -43,7 +43,7 @@ impl PrefixRouteMatcher {
         result
     }
 
-    fn match_parts_to_route(&self, incoming_parts: Vec<&str>, possible_match: &RouteEntry) -> bool {
+    fn matches_route(&self, incoming_parts: &[&str], possible_match: &RouteEntry) -> bool {
         let matching_parts = self.explode_webroute(&possible_match.route);
 
         let no_match_parts = matching_parts.len();
@@ -61,14 +61,9 @@ impl PrefixRouteMatcher {
         if no_match_parts == no_incoming_parts {
             return matching_parts.iter().eq(incoming_parts.iter());
         }
-
-        // This returns the array length, and up until
-        // this index, the matches should be the same
-        let expected_until_index_match = no_match_parts;
-
         // Take the amount of incoming parts that match the
         // number of expected parts.: std::iter::Take<std::slice::Iter<'_, &str>>
-        let index_matched_incoming_parts = incoming_parts.iter().take(expected_until_index_match);
+        let index_matched_incoming_parts = incoming_parts.iter().take(no_match_parts);
 
         let matches = matching_parts
             .iter()
@@ -88,13 +83,6 @@ impl RouteMatcher for PrefixRouteMatcher {
         // Explode the full path in parts so we can start comparing one by one
         let parts = self.explode_webroute(path);
 
-        for r in &self.routes {
-            let x = self.match_parts_to_route(parts.clone(), r);
-
-            if x == true {
-                return Some(r);
-            }
-        }
-        None
+        self.routes.iter().find(|r| self.matches_route(&parts, r))
     }
 }
