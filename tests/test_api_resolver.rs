@@ -1,7 +1,7 @@
 use fastingress::{
     api_resolver::resolve_in_cluster_uri,
     route_entry::RouteEntry,
-    uri_resolver::{InClusterServiceURLResolver, UrlResolver},
+    urlresolving::{incluster_url_resolver::InClusterServiceURLResolver, UrlResolver},
 };
 use hyper::Uri;
 
