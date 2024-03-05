@@ -62,16 +62,11 @@ impl PrefixRouteMatcher {
             return matching_parts.iter().eq(incoming_parts.iter());
         }
         // Take the amount of incoming parts that match the
-        // number of expected parts.: std::iter::Take<std::slice::Iter<'_, &str>>
+        // number of expected parts.
         let index_matched_incoming_parts = incoming_parts.iter().take(no_match_parts);
 
-        let matches = matching_parts
-            .iter()
-            .zip(index_matched_incoming_parts)
-            .filter(|&(a, b)| a == b)
-            .count();
-
-        matches == no_match_parts
+        // Check if the vecs are equal
+        matching_parts.iter().eq(index_matched_incoming_parts)
     }
 }
 
