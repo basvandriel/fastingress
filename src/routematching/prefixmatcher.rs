@@ -59,19 +59,24 @@ impl PrefixRouteMatcher {
         // - The same amount in paths (incoming: "/example/hi", "/example/bas")
         // - Have a higher amount of paths (incoming: "/example/hi/bas"  route: "/example/hi")
         if no_match_parts == no_incoming_parts {
-            let actual_matches = matching_parts
-                .iter()
-                .zip(&incoming_parts)
-                .filter(|&(a, b)| a == b)
-                .count();
-
-            return actual_matches == no_incoming_parts;
-        } else {
-            // If the incoming route has more parts then the route entry
-            // that can be ok IF the route entry part works
+            return matching_parts.iter().eq(incoming_parts.iter());
         }
 
-        false
+        // This returns the array length, and up until
+        // this index, the matches should be the same
+        let expected_until_index_match = no_match_parts;
+
+        // Take the amount of incoming parts that match the
+        // number of expected parts.: std::iter::Take<std::slice::Iter<'_, &str>>
+        let index_matched_incoming_parts = incoming_parts.iter().take(expected_until_index_match);
+
+        let matches = matching_parts
+            .iter()
+            .zip(index_matched_incoming_parts)
+            .filter(|&(a, b)| a == b)
+            .count();
+
+        matches == no_incoming_parts
     }
 }
 

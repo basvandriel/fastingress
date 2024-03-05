@@ -16,7 +16,7 @@ impl ProxiedServiceURLResolver {
         if ingress_route == request_path {
             return "/";
         }
-        let x = request_path.strip_prefix(ingress_route);
+        let _x = request_path.strip_prefix(ingress_route);
         // TODO lstrip the request path. Remove the ingress route.
 
         "bas"
