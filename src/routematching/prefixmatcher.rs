@@ -43,44 +43,35 @@ impl PrefixRouteMatcher {
         result
     }
 
-    fn match_parts_to_route(
-        &self,
-        incoming_parts: Vec<&str>,
-        possible_match: &RouteEntry,
-    ) -> Option<&RouteEntry> {
+    fn match_parts_to_route(&self, incoming_parts: Vec<&str>, possible_match: &RouteEntry) -> bool {
         let matching_parts = self.explode_webroute(&possible_match.route);
+
         let no_match_parts = matching_parts.len();
         let no_incoming_parts = incoming_parts.len();
 
         // For example, route entry /example/hi/bas
         // should never match to /example/hi
-        if matching_parts.len() > incoming_parts.len() {
-            return None;
+        if no_match_parts > no_incoming_parts {
+            return false;
         }
 
         // From here, only routes match that are
         // - The same amount in paths (incoming: "/example/hi", "/example/bas")
         // - Have a higher amount of paths (incoming: "/example/hi/bas"  route: "/example/hi")
-        if matching_parts.len() == incoming_parts.len() {
+        if no_match_parts == no_incoming_parts {
             let actual_matches = matching_parts
                 .iter()
                 .zip(&incoming_parts)
                 .filter(|&(a, b)| a == b)
                 .count();
 
-            let matching: bool = actual_matches == no_incoming_parts;
-
-            if !matching {
-                return None;
-            }
-            return None;
-            // return Some(possible_match);
+            return actual_matches == no_incoming_parts;
         } else {
             // If the incoming route has more parts then the route entry
             // that can be ok IF the route entry part works
         }
 
-        None
+        false
     }
 }
 
@@ -89,14 +80,16 @@ impl RouteMatcher for PrefixRouteMatcher {
         if self.routes.is_empty() {
             return None;
         }
-        let parts = self.explode_webroute(path);
         // Explode the full path in parts so we can start comparing one by one
-        // let parts = path.split("/").collect::<Vec<&str>>();
+        let parts = self.explode_webroute(path);
 
         for r in &self.routes {
             let x = self.match_parts_to_route(parts.clone(), r);
-        }
 
+            if x == true {
+                return Some(r);
+            }
+        }
         None
     }
 }

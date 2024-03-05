@@ -48,3 +48,22 @@ fn it_should_fail_on_same_length_routes() {
 
     assert_eq!(result.is_none(), true)
 }
+
+#[test]
+fn it_should_succeed_on_same_length_routes() {
+    let route_entry_path = "/example/bas";
+    let incoming_path = "/example/bas";
+
+    let longentry = RouteEntry {
+        ingress_name: "".to_string(),
+        host: "".to_string(),
+        service: "".to_string(),
+        namespace: "".to_string(),
+        port: 80,
+        route: route_entry_path.to_owned(),
+    };
+    let matcher = PrefixRouteMatcher::new(vec![longentry]);
+    let result = matcher.find(incoming_path);
+
+    assert_eq!(result.is_none(), false)
+}
