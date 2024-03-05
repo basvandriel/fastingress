@@ -39,7 +39,7 @@ impl PrefixRouteMatcher {
 
     fn explode_webroute<'a>(&self, fullpath: &'a str) -> Vec<&'a str> {
         // TODO write something that will remove the trailing "/"
-        let result = fullpath.split("/").collect::<Vec<&str>>();
+        let result = fullpath.split('/').collect::<Vec<&str>>();
         result
     }
 

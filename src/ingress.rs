@@ -54,9 +54,7 @@ impl IngressRequestHandler {
         let matcher = self.find_routematcher();
         let resolved = matcher.find(original_uri.path());
 
-        if resolved.is_none() {
-            return None;
-        }
+        resolved?;
         let servicelocation = resolved.unwrap();
 
         let url = self
