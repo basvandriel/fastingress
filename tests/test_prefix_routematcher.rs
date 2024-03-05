@@ -103,5 +103,5 @@ fn it_should_succeed_on_extra_routes() {
     let matcher = PrefixRouteMatcher::new(vec![longentry]);
     let result = matcher.find(incoming_path);
 
-    assert_eq!(result.is_none(), true)
+    assert_eq!(result.is_none(), false)
 }

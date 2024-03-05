@@ -14,7 +14,7 @@ use crate::proxy::R;
 use crate::route_entry::RouteEntry;
 use crate::routedebugger::RouteDebugger;
 use crate::routematching::matcher::RouteMatcher;
-use crate::routematching::matcher::StrictRouteMatcher;
+use crate::routematching::prefixmatcher::PrefixRouteMatcher;
 use crate::service_resolver::running_in_kubernetes_cluster;
 use crate::uri_resolver::InClusterServiceURLResolver;
 use crate::uri_resolver::ProxiedServiceURLResolver;
@@ -43,9 +43,7 @@ impl IngressRequestHandler {
         Box::new(ProxiedServiceURLResolver { original_url })
     }
     fn find_routematcher(&self) -> Box<dyn RouteMatcher> {
-        let matcher = StrictRouteMatcher {
-            existing_routes: self.routes.clone(),
-        };
+        let matcher = PrefixRouteMatcher::new(self.routes.clone());
         Box::new(matcher)
     }
     fn resolve_url(&self, original_uri: &Uri) -> Option<Uri> {

@@ -27,6 +27,7 @@ fn resolve_ip() -> Ipv4Addr {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
+    // TODO verify kubernetes cluster connectivity here
     let logger = Logger {};
 
     let routes: Arced<Vec<RouteEntry>> = Arc::new(Mutex::new(vec![]));
