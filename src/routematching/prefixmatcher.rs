@@ -71,9 +71,7 @@ impl PrefixRouteMatcher {
             .filter(|&(a, b)| a == b)
             .count();
 
-        let matching = matches == no_match_parts;
-
-        matching
+        matches == no_match_parts
     }
 }
 
