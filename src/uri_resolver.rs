@@ -10,16 +10,15 @@ pub struct ProxiedServiceURLResolver {
     pub original_url: Uri,
 }
 impl ProxiedServiceURLResolver {
-    fn resolve_non_rootpath(&self, ingress_route: &str, request_path: &str) -> &str {
+    fn resolve_non_rootpath(&self, ingress_route: &str, request_path: &str) -> String {
         // This handles the case where the incoming route
         // is equal to te defined path on the matched ingress route
         if ingress_route == request_path {
-            return "/";
+            return "/".to_string();
         }
-
         let stripped = request_path.strip_prefix(ingress_route).unwrap();
 
-        "/"
+        stripped.to_string()
     }
 }
 impl UrlResolver for ProxiedServiceURLResolver {
@@ -42,7 +41,7 @@ impl UrlResolver for ProxiedServiceURLResolver {
         let incomingpath = pathquery.path();
 
         if incomingpath != "/" {
-            service_url += self.resolve_non_rootpath(&loc.route, incomingpath);
+            service_url += &self.resolve_non_rootpath(&loc.route, incomingpath);
         } else {
             service_url += "/"
         }
