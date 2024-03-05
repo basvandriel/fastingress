@@ -19,11 +19,9 @@ impl ProxiedServiceURLResolver {
 impl UrlResolver for ProxiedServiceURLResolver {
     fn resolve(&self, loc: &RouteEntry) -> Option<Uri> {
         let mut service_url = resolve_service_uri(loc).to_string();
-
         service_url += &format!(":{}", loc.port);
 
-        // For some reason, the url always have to end
-        // with a slash.
+        // The url always have to end with a slash.
         service_url += "/proxy/";
 
         let pathquery = self.original_url.path_and_query().expect("Should have");
