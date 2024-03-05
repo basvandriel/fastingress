@@ -1,9 +1,6 @@
 use std::net::Ipv4Addr;
 
-use crate::{
-    service_resolver::{resolve_service_uri, KubeServiceLocation},
-    utils::handshake_url,
-};
+use crate::{route_entry::RouteEntry, service_resolver::resolve_service_uri, utils::handshake_url};
 use http_body_util::{BodyExt, Empty};
 use hyper::{self, client::conn::http1::SendRequest};
 use hyper::{
@@ -15,7 +12,7 @@ use serde::Deserialize;
 pub struct ProxiedServiceIPFinder {}
 
 impl ProxiedServiceIPFinder {
-    async fn request_json(service_location: &KubeServiceLocation) -> Response<Incoming> {
+    async fn request_json(service_location: &RouteEntry) -> Response<Incoming> {
         type BodyType = Empty<Bytes>;
 
         let service_url = resolve_service_uri(service_location);
@@ -31,7 +28,7 @@ impl ProxiedServiceIPFinder {
         sender.send_request(req).await.unwrap()
     }
 
-    pub async fn find(&self, service_location: &KubeServiceLocation) -> Option<Ipv4Addr> {
+    pub async fn find(&self, service_location: &RouteEntry) -> Option<Ipv4Addr> {
         let response = Self::request_json(service_location).await;
 
         #[derive(Deserialize)]

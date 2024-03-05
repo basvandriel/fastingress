@@ -36,6 +36,7 @@ impl APIListener {
 
                 // Will be set later
                 ingress_name: String::new(),
+                namespace: "default".to_string(),
             };
 
             self.logger.info(&format!(
@@ -84,7 +85,6 @@ impl APIListener {
     pub async fn listen(self) {
         let client = Client::try_default().await.expect("Kube client");
         let api = Api::<Ingress>::default_namespaced(client);
-
         let conf = watcher::Config::default();
 
         let stream = watcher(api, conf).applied_objects();

@@ -5,12 +5,12 @@ metadata:
 spec:
   ingressClassName: fastingress
   rules:
-  - http:
-      paths:
-      - path: /baaas
-        pathType: Prefix
-        backend:
-          service:
-            name: nginx-service5
-            port:
-              number: 80
+    - http:
+        paths:
+          - path: /baaas
+            pathType: Prefix
+            backend:
+              service:
+                name: nginx-service
+                port:
+                  number: 80
