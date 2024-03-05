@@ -11,11 +11,6 @@ pub struct ProxiedServiceURLResolver {
 }
 impl ProxiedServiceURLResolver {
     fn resolve_non_rootpath(&self, ingress_route: &str, request_path: &str) -> String {
-        // This handles the case where the incoming route
-        // is equal to te defined path on the matched ingress route
-        if ingress_route == request_path {
-            return "/".to_string();
-        }
         let stripped = request_path.strip_prefix(ingress_route).unwrap();
 
         stripped.to_string()
@@ -29,26 +24,16 @@ impl UrlResolver for ProxiedServiceURLResolver {
 
         // For some reason, the url always have to end
         // with a slash.
-        service_url += "/proxy";
+        service_url += "/proxy/";
 
         let pathquery = self.original_url.path_and_query().expect("Should have");
-
-        // TODO this has an issue. When a service is listening on "/example/" for example, this shouldn't
-        // be added to the URL
-
-        // do nothing, only add query
-
         let incomingpath = pathquery.path();
 
-        if incomingpath != "/" {
-            service_url += &self.resolve_non_rootpath(&loc.route, incomingpath);
-        } else {
-            service_url += "/"
-        }
-        // service_url += &pathquery.to_string();
+        let direct_match = loc.route == incomingpath;
 
-        // if let Some(path_and_query) = self.original_url.path_and_query() {
-        // }
+        if incomingpath != "/" && !direct_match {
+            service_url += &self.resolve_non_rootpath(&loc.route, incomingpath);
+        }
         Some(service_url.parse::<Uri>().unwrap())
     }
 }
