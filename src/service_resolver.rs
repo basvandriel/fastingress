@@ -29,15 +29,3 @@ pub fn resolve_service_uri(service_loc: &RouteEntry) -> Uri {
 
     url.parse::<Uri>().unwrap()
 }
-
-pub fn build_service_proxy_url(service_loc: &RouteEntry, original_uri: &Uri) -> Uri {
-    let mut service_url = resolve_service_uri(service_loc).to_string();
-
-    service_url += &format!(":{}", service_loc.port);
-    service_url += "/proxy";
-
-    if let Some(path_and_query) = original_uri.path_and_query() {
-        service_url += &path_and_query.to_string();
-    }
-    service_url.parse::<Uri>().unwrap()
-}

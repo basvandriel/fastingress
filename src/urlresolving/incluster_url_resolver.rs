@@ -11,7 +11,6 @@ impl UrlResolver for InClusterServiceURLResolver {
     fn resolve(&self, loc: &RouteEntry) -> Option<Uri> {
         let mut uri = format!("http://{}.{}.svc.", loc.service, loc.namespace);
         uri += Self::DEFAULT_CLUSTER_DNS_SUFFIX;
-        uri += "/";
 
         if let Some(path_and_query) = self.original_url.path_and_query() {
             uri += &path_and_query.to_string();
