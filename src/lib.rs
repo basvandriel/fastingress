@@ -1,7 +1,6 @@
 pub mod api_resolver;
 pub mod constants;
 pub mod ingress;
-pub mod ipfinder;
 pub mod kube_api_structs;
 pub mod logger;
 pub mod paths;
