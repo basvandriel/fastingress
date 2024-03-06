@@ -10,7 +10,6 @@ pub struct ProxiedServiceURLResolver {
 impl ProxiedServiceURLResolver {
     fn resolve_non_rootpath(&self, ingress_route: &str, request_path: &str) -> String {
         let stripped = request_path.strip_prefix(ingress_route).unwrap();
-
         stripped.to_string()
     }
 }
@@ -22,13 +21,15 @@ impl UrlResolver for ProxiedServiceURLResolver {
         // The url always have to end with a slash.
         service_url += "/proxy/";
 
-        let pathquery = self.original_url.path_and_query().expect("Should have");
-        let incomingpath = pathquery.path();
-
+        let incomingpath = self.original_url.path();
         let direct_match = loc.route == incomingpath;
 
         if incomingpath != "/" && !direct_match {
             service_url += &self.resolve_non_rootpath(&loc.route, incomingpath);
+        }
+
+        if let Some(query) = self.original_url.query() {
+            service_url += &format!("?{}", query)
         }
         Some(service_url.parse::<Uri>().unwrap())
     }
