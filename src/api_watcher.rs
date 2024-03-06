@@ -107,6 +107,8 @@ impl APIListener {
                 .resolve_ingress(&ingress.spec.unwrap(), ingress_name)
                 .await;
 
+            // TODO this should not just extend.
+            // See https://github.com/basvandriel/fastingress/issues/11
             self.routes.lock().unwrap().extend(routes);
         }
     }
