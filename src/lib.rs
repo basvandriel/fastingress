@@ -7,7 +7,6 @@ pub mod logger;
 pub mod paths;
 pub mod proxy;
 pub mod service_resolver;
-pub mod uri_resolver;
 
 pub mod request_handler;
 pub mod utils;
@@ -22,3 +21,5 @@ pub mod route_entry;
 pub mod routedebugger;
 
 pub mod routematching;
+
+pub mod urlresolving;

@@ -16,10 +16,9 @@ use crate::routedebugger::RouteDebugger;
 use crate::routematching::matcher::RouteMatcher;
 use crate::routematching::prefixmatcher::PrefixRouteMatcher;
 use crate::service_resolver::running_in_kubernetes_cluster;
-use crate::uri_resolver::InClusterServiceURLResolver;
-use crate::uri_resolver::ProxiedServiceURLResolver;
-use crate::uri_resolver::UrlResolver;
-
+use crate::urlresolving::incluster_url_resolver::InClusterServiceURLResolver;
+use crate::urlresolving::proxied_url_resolver::ProxiedServiceURLResolver;
+use crate::urlresolving::UrlResolver;
 type RQ = Request<Incoming>;
 
 #[derive(Debug, Clone)]
