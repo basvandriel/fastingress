@@ -1,18 +1,15 @@
 use futures::{pin_mut, TryStreamExt};
 use k8s_openapi::api::networking::v1::{HTTPIngressPath, Ingress, IngressRule, IngressSpec};
 
-use crate::constants::INGRESS_CLASSNAME;
+use crate::ingress_watcher::event_handler::IngressEventHandler;
 use crate::logger::Logger;
 use crate::route_entry::RouteEntry;
 use crate::types::Arced;
-
-// USE super::/
-use kube::{
-    runtime::{events::EventType, watcher, WatchStreamExt},
-    Api, Client,
+use crate::{
+    constants::INGRESS_CLASSNAME, ingress_watcher::ingress_delete_handler::IngressDeleteHandler,
 };
 
-use super::event_type::IngressOperationType;
+use kube::{runtime::watcher, Api, Client};
 
 pub struct APIListener {
     pub logger: Logger,
@@ -23,22 +20,6 @@ pub struct APIListener {
 }
 
 impl APIListener {
-    fn resolve_operation(&self, ingress: &Ingress) -> Option<IngressOperationType> {
-        let operation = ingress
-            .metadata
-            .managed_fields
-            .as_ref()?
-            .first()?
-            .operation
-            .as_deref()?;
-
-        match operation {
-            "Updated" => Some(IngressOperationType::UPDATED),
-            "Added" => IngressOperationType::ADDED.into(),
-            _ => None,
-        }
-    }
-
     fn resolve_rule_entries(&self, route: &IngressRule) -> Vec<RouteEntry> {
         let http = route.http.as_ref().unwrap();
         let paths: Vec<HTTPIngressPath> = http.paths.clone();
@@ -105,11 +86,10 @@ impl APIListener {
     }
 
     async fn handle_ingress_update(&self, ingress: &Ingress) {
+        if self.resolve_ingress_class(&ingress) != INGRESS_CLASSNAME {
+            return;
+        }
         // TODO holds a uid. Might be nice for finding?
-        let operation = self
-            .resolve_operation(&ingress)
-            .expect("Operation should be valid");
-
         let ingress_name = ingress.metadata.name.as_ref().unwrap();
 
         let routes = self
@@ -122,24 +102,40 @@ impl APIListener {
         // See https://github.com/basvandriel/fastingress/issues/11
         payload.extend(routes);
     }
+
+    async fn process_ingress_event(&self, event: watcher::Event<Ingress>) {
+        let routeclone = self.routes.clone();
+
+        // TODO we can create an event handler and return that. Then call that
+        match event {
+            watcher::Event::Applied(ingress) => {
+                self.handle_ingress_update(&ingress).await;
+            }
+            watcher::Event::Deleted(ingress) => {
+                IngressDeleteHandler::new(routeclone).handle(&ingress);
+            }
+            watcher::Event::Restarted(_ingress) => {
+                // TODO check if there, if not add it
+            }
+        };
+
+        println!("hi");
+    }
+
     pub async fn listen(self) {
         let client = Client::try_default().await.expect("Kube client");
-        let api = Api::<Ingress>::default_namespaced(client);
+        let api = Api::<Ingress>::namespaced(client, "default");
         let conf = watcher::Config::default();
 
-        let stream = watcher(api, conf).applied_objects();
-        pin_mut!(stream);
+        let w = watcher(api, conf);
+        pin_mut!(w);
 
-        let logmessage = format!(
+        self.logger.info(&format!(
             "Listening for new Kubernetes Ingress events with classname '{INGRESS_CLASSNAME}'"
-        );
-        self.logger.info(&logmessage);
+        ));
 
-        while let Some(ingress) = stream.try_next().await.unwrap() {
-            if self.resolve_ingress_class(&ingress) != INGRESS_CLASSNAME {
-                continue;
-            }
-            self.handle_ingress_update(&ingress).await;
+        while let Some(event) = w.try_next().await.unwrap() {
+            self.process_ingress_event(event).await
         }
     }
 }

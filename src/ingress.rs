@@ -34,7 +34,6 @@ impl IngressRequestHandler {
             logger: Logger {},
         }
     }
-
     fn build_url_resolver(&self, original_url: Uri) -> Box<dyn UrlResolver> {
         if running_in_kubernetes_cluster() {
             return Box::new(InClusterServiceURLResolver { original_url });
