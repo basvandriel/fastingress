@@ -1,5 +1,5 @@
 use futures::{pin_mut, TryStreamExt};
-use k8s_openapi::api::networking::v1::{HTTPIngressPath, Ingress, IngressRule, IngressSpec};
+use k8s_openapi::api::networking::v1::Ingress;
 
 use crate::ingress_watcher::event_handler::IngressEventHandler;
 use crate::ingress_watcher::ingress_appied_handler::IngressAppliedHandler;
@@ -33,7 +33,7 @@ impl APIListener {
                 IngressDeleteHandler::new(routeclone).handle(&ingress);
             }
             watcher::Event::Restarted(_ingress) => {
-                // TODO check if there, if not add it
+                // TODO check if there, if not add it. Shoulde be addeed to applied
             }
         };
 
