@@ -23,7 +23,6 @@ kubectl apply -f kubernetes/sample-conf3.yml
 Now, the application can be reached by navigating to `http://localhost:3000/baaas`, which will then proxy to the added service. In this case, that should result in a NGINX welcome page.
 
 
-
 ## debugging 
 
 See [this link](https://code.visualstudio.com/docs/languages/rust#_debugging). See the `launch.json` example below:

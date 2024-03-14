@@ -85,14 +85,17 @@ impl IngressEventHandler for IngressAppliedHandler {
         if self.resolve_ingress_class(&ingress) != INGRESS_CLASSNAME {
             return;
         }
-        // TODO holds a uid. Might be nice for finding?
         let ingress_name = ingress.metadata.name.as_ref().unwrap();
+        let ingress_spec = ingress.spec.as_ref().unwrap();
 
-        let routes = self.resolve_ingress(ingress.spec.as_ref().unwrap(), ingress_name);
+        let routes = self.resolve_ingress(ingress_spec, ingress_name);
 
         let mut payload = self.routes.lock().unwrap();
 
-        // TODO this should not just extend.
+        // If it is already routed, let's delete it first. It's easier then adding the routes one by one.
+        // Meaning, everything that returns false based on this func will get deleted
+        payload.retain(|r| &r.ingress_name != ingress_name);
+
         // See https://github.com/basvandriel/fastingress/issues/11
         payload.extend(routes);
     }
