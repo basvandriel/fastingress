@@ -10,6 +10,7 @@ use crate::{
     constants::INGRESS_CLASSNAME, ingress_watcher::ingress_delete_handler::IngressDeleteHandler,
 };
 
+use kube::runtime::watcher::Event::{Applied, Deleted, Restarted};
 use kube::{runtime::watcher, Api, Client};
 
 pub struct APIListener {
@@ -24,20 +25,20 @@ impl APIListener {
     async fn process_ingress_event(&self, event: watcher::Event<Ingress>) {
         let routeclone = self.routes.clone();
 
+        let mut apply_handler = IngressAppliedHandler::new(routeclone);
+
         // TODO we can create an event handler and return that. Then call that
         match event {
-            watcher::Event::Applied(ingress) => {
-                IngressAppliedHandler::new(routeclone).handle(&ingress);
+            Restarted(ingresses) => {
+                ingresses.iter().for_each(|f| apply_handler.handle(f));
             }
-            watcher::Event::Deleted(ingress) => {
-                IngressDeleteHandler::new(routeclone).handle(&ingress);
+            Applied(ingress) => {
+                apply_handler.handle(&ingress);
             }
-            watcher::Event::Restarted(_ingress) => {
-                // TODO check if there, if not add it. Shoulde be addeed to applied
+            Deleted(ingress) => {
+                IngressDeleteHandler::new(self.routes.clone()).handle(&ingress);
             }
         };
-
-        println!("hi");
     }
 
     pub async fn listen(self) {
