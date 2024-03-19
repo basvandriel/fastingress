@@ -27,10 +27,11 @@ impl APIListener {
 
         let mut apply_handler = IngressAppliedHandler::new(routeclone);
 
-        // TODO we can create an event handler and return that. Then call that
         match event {
             Restarted(ingresses) => {
-                ingresses.iter().for_each(|f| apply_handler.handle(f));
+                for i in ingresses {
+                    apply_handler.handle(&i);
+                }
             }
             Applied(ingress) => {
                 apply_handler.handle(&ingress);
