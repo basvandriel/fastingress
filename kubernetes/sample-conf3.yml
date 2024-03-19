@@ -7,7 +7,7 @@ spec:
   rules:
     - http:
         paths:
-          - path: /baaas
+          - path: /ba333
             pathType: Prefix
             backend:
               service:

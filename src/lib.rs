@@ -18,3 +18,5 @@ pub mod routedebugger;
 pub mod routematching;
 
 pub mod urlresolving;
+
+pub mod ingress_watcher;

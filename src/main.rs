@@ -3,8 +3,8 @@ use std::error::Error;
 use std::net::{Ipv4Addr, SocketAddr};
 use std::sync::{Arc, Mutex};
 
-use fastingress::api_watcher::APIListener;
 use fastingress::constants::DEFAULT_LISTENING_PORT;
+use fastingress::ingress_watcher::watcher::APIListener;
 use fastingress::logger::Logger;
 use fastingress::request_handler::Svc;
 use fastingress::route_entry::RouteEntry;
