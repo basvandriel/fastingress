@@ -82,7 +82,7 @@ impl IngressAppliedHandler {
 
 impl IngressEventHandler for IngressAppliedHandler {
     fn handle(&mut self, ingress: &k8s_openapi::api::networking::v1::Ingress) {
-        if self.resolve_ingress_class(&ingress) != INGRESS_CLASSNAME {
+        if self.resolve_ingress_class(ingress) != INGRESS_CLASSNAME {
             return;
         }
         let ingress_name = ingress.metadata.name.as_ref().unwrap();
