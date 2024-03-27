@@ -36,9 +36,10 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let routes_clone = routes.clone();
 
     spawn(async move {
-        // TODO Maybe just set the entire routes in here.
         let listener = APIListener { logger, routes };
-        listener.listen(&kubeclient).await;
+
+        // Hand ownership to the API listener
+        listener.listen(kubeclient).await;
     });
 
     let address = SocketAddr::from((resolve_ip(), DEFAULT_LISTENING_PORT));
