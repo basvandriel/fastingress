@@ -1,6 +1,9 @@
-use k8s_openapi::api::networking::v1::{HTTPIngressPath, Ingress, IngressRule, IngressSpec};
+use k8s_openapi::api::networking::v1::Ingress;
 
-use crate::{constants::INGRESS_CLASSNAME, route_entry::RouteEntry, types::Arced};
+use crate::{
+    constants::INGRESS_CLASSNAME, route_entry::RouteEntry, route_entry_resolver::IngressResolver,
+    types::Arced,
+};
 
 use super::event_handler::IngressEventHandler;
 
@@ -12,63 +15,6 @@ impl IngressAppliedHandler {
     pub fn new(routes: Arced<Vec<RouteEntry>>) -> Self {
         Self { routes }
     }
-    fn resolve_rule_entries(&self, route: &IngressRule) -> Vec<RouteEntry> {
-        let http = route.http.as_ref().unwrap();
-        let paths: Vec<HTTPIngressPath> = http.paths.clone();
-
-        let mut entries: Vec<RouteEntry> = vec![];
-
-        for pathobj in paths.iter() {
-            let service = pathobj.backend.service.as_ref().unwrap();
-            let port = service.port.as_ref().unwrap().number.unwrap();
-            let path = pathobj.path.as_ref().unwrap();
-
-            let x = RouteEntry {
-                host: "localhost".to_string(),
-                port,
-                route: path.to_owned(),
-                service: service.name.to_owned(),
-
-                // Will be set later
-                ingress_name: String::new(),
-                namespace: "default".to_string(),
-            };
-
-            let logmsg = &format!(
-                "Routing \"{}\" to \"{}\" on port {}",
-                &x.route, &x.service, &x.port
-            );
-            println!("{}", logmsg);
-
-            entries.push(x);
-        }
-        entries
-    }
-
-    fn resolve_route_entries(
-        &self,
-        routemap: &[IngressRule],
-        ingress_name: &String,
-    ) -> Vec<RouteEntry> {
-        routemap
-            .iter()
-            .flat_map(|route| self.resolve_rule_entries(route))
-            .map(|mut inf| {
-                inf.ingress_name = ingress_name.to_owned();
-                inf
-            })
-            .collect()
-    }
-
-    fn resolve_ingress(&self, ingress: &IngressSpec, name: &String) -> Vec<RouteEntry> {
-        let rules: Vec<IngressRule> = ingress
-            .to_owned()
-            .rules
-            .expect("Ingress Rules should be there");
-
-        self.resolve_route_entries(&rules, name)
-    }
-
     fn resolve_ingress_class<'a>(&'a self, ingress: &'a Ingress) -> &String {
         ingress
             .spec
@@ -78,6 +24,15 @@ impl IngressAppliedHandler {
             .as_ref()
             .expect("class name should be there")
     }
+
+    fn convert_ingress_to_route_entries(
+        &self,
+        ingress: &k8s_openapi::api::networking::v1::Ingress,
+        ingress_name: &str,
+    ) -> Vec<RouteEntry> {
+        let ingress_spec = ingress.spec.as_ref().unwrap();
+        IngressResolver {}.to_route_entries(ingress_spec, ingress_name)
+    }
 }
 
 impl IngressEventHandler for IngressAppliedHandler {
@@ -86,9 +41,7 @@ impl IngressEventHandler for IngressAppliedHandler {
             return;
         }
         let ingress_name = ingress.metadata.name.as_ref().unwrap();
-        let ingress_spec = ingress.spec.as_ref().unwrap();
-
-        let routes = self.resolve_ingress(ingress_spec, ingress_name);
+        let route_entries = self.convert_ingress_to_route_entries(ingress, ingress_name);
 
         let mut payload = self.routes.lock().unwrap();
 
@@ -97,6 +50,6 @@ impl IngressEventHandler for IngressAppliedHandler {
         payload.retain(|r| &r.ingress_name != ingress_name);
 
         // See https://github.com/basvandriel/fastingress/issues/11
-        payload.extend(routes);
+        payload.extend(route_entries);
     }
 }
