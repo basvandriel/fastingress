@@ -42,9 +42,8 @@ impl APIListener {
         };
     }
 
-    pub async fn listen(self) {
-        let client = Client::try_default().await.expect("Kube client");
-        let api = Api::<Ingress>::namespaced(client, "default");
+    pub async fn listen(self, kubeclient: &Client) {
+        let api = Api::<Ingress>::namespaced(kubeclient.to_owned(), "default");
         let conf = watcher::Config::default();
 
         let w = watcher(api, conf);

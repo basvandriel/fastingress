@@ -20,4 +20,5 @@ pub mod routematching;
 pub mod urlresolving;
 
 pub mod ingress_watcher;
+pub mod kube_client_resolver;
 pub mod route_entry_resolver;
