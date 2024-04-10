@@ -14,7 +14,7 @@ pub type R = Response<BoxBody<Bytes, hyper::Error>>;
 pub async fn proxy_response(uri: Uri) -> Result<R, ErrorType> {
     type BodyType = Empty<Bytes>;
 
-    let mut sender = utils::handshake_url::<BodyType>(&uri).await;
+    let mut sender = utils::handshake_url::<BodyType>(&uri).await?;
     let authority = uri.authority().unwrap().clone();
 
     // TODO This needs the path and headers and body as well

@@ -13,7 +13,10 @@ impl KubeClientResolver {
     }
 
     async fn verify_api_access(&self, kubeclient: &Client) {
-        kubeclient.apiserver_version().await.unwrap();
+        kubeclient
+            .apiserver_version()
+            .await
+            .expect("API connection should work");
     }
 
     async fn verify_proxy_access(&self) {
@@ -22,8 +25,11 @@ impl KubeClientResolver {
             .parse::<hyper::Uri>()
             .expect("URL should be parsed");
 
-        // Will panic
-        handshake_url::<Empty<Bytes>>(&url).await;
+        let result = handshake_url::<Empty<Bytes>>(&url).await;
+
+        if result.is_err() {
+            panic!("Can't connect to Kubernetes cluster");
+        }
     }
 
     pub async fn resolve(&self) -> Option<Client> {

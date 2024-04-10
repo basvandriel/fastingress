@@ -30,7 +30,10 @@ fn resolve_ip() -> Ipv4Addr {
 async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     let logger = Logger {};
 
-    let kubeclient = KubeClientResolver::new(logger).resolve().await.unwrap();
+    let kubeclient = KubeClientResolver::new(logger)
+        .resolve()
+        .await
+        .expect("Kubernetes connection should be active");
 
     let routes: Arced<Vec<RouteEntry>> = Arc::new(Mutex::new(vec![]));
     let routes_clone = routes.clone();
