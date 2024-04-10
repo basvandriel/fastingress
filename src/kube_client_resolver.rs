@@ -29,7 +29,7 @@ impl KubeClientResolver {
 
         if result.is_err() {
             println!();
-            panic!("Can't connect to Kubernetes cluster on {url}");
+            panic!("Can't connect to Kubernetes cluster on {url}, please make sure it's running");
         }
     }
 
