@@ -5,6 +5,7 @@ use std::sync::{Arc, Mutex};
 
 use fastingress::constants::DEFAULT_LISTENING_PORT;
 use fastingress::ingress_watcher::watcher::APIListener;
+use fastingress::kube_client_resolver::KubeClientResolver;
 use fastingress::logger::Logger;
 use fastingress::request_handler::Svc;
 use fastingress::route_entry::RouteEntry;
@@ -27,16 +28,21 @@ fn resolve_ip() -> Ipv4Addr {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
-    // TODO verify kubernetes cluster connectivity here
     let logger = Logger {};
+
+    let kubeclient = KubeClientResolver::new(logger)
+        .resolve()
+        .await
+        .expect("Kubernetes connection should be active");
 
     let routes: Arced<Vec<RouteEntry>> = Arc::new(Mutex::new(vec![]));
     let routes_clone = routes.clone();
 
     spawn(async move {
-        // TODO Maybe just set the entire routes in here.
         let listener = APIListener { logger, routes };
-        listener.listen().await;
+
+        // Hand ownership to the API listener
+        listener.listen(kubeclient).await;
     });
 
     let address = SocketAddr::from((resolve_ip(), DEFAULT_LISTENING_PORT));
