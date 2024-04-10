@@ -28,7 +28,7 @@ impl KubeClientResolver {
         let result = handshake_url::<Empty<Bytes>>(&url).await;
 
         if result.is_err() {
-            panic!("Can't connect to Kubernetes cluster");
+            panic!("Can't connect to Kubernetes cluster on {url}");
         }
     }
 

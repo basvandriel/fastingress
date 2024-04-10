@@ -14,21 +14,17 @@ where
     T::Data: Send,
     T::Error: Into<Box<dyn StdError + Send + Sync>>,
 {
-    // Get the host and the port
     let host = uri.host().expect("uri has no host");
-    let port = uri.port_u16().unwrap_or(80);
+    let port = uri.port_u16().expect("URI should have a port");
 
     let address = format!("{}:{}", host, port);
 
     // Open a TCP connection to the remote host
-    let stream = TcpStream::connect(address).await;
+    let stream = TcpStream::connect(address).await?;
 
-    if stream.is_err() {
-        return Err(stream.unwrap_err());
-    }
     // Use an adapter to access something implementing `tokio::io` traits as if they implement
     // `hyper::rt` IO traits.
-    let io = TokioIo::new(stream.unwrap());
+    let io = TokioIo::new(stream);
 
     // Perform a TCP handshake
     let (sender, connection) = handshake::<TokioIo<TcpStream>, T>(io).await.unwrap();
